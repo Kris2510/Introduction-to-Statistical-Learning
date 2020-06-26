@@ -1,0 +1,551 @@
+---
+title: "An Introduction to Statistical Learning"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(ISLR)
+library(MASS)
+```
+&nbsp;&nbsp;
+
+## 6. Linear Model Selection and Regularization  
+
+&nbsp;
+
+### Conceptual
+
+&nbsp;
+
+#### **1.** We perform best subset, forward stepwise, and backward stepwise selection on a single data set. For each approach, we obtain p+1 models, containing 0,1,2,...,p predictors. Explain your answers:
+
+&nbsp;
+
+  (a) Which of the three models with k predictors has the smallest training RSS?
+  The model with best subset selection has the smallest training RSS since it considers every possible model with k predictrors. Thus it could happen that die other two approaches end up picking the same model.
+  (b) Which of the three models with k predictors has the smallest test RSS?
+  Hard to say with the given information. Best subset may overfit if n is relativly small compared to p. Also the other two methods may pick a model that performs better on test set by luck.
+  c) True or False:
+  i. The predictors in the k-variable model identified by forwardstep wise are a subset of the predictors in the (k+1)-variable model identified by forward stepwise selection.**TRUE**
+  ii. The predictors in the k-variable model identified by backward stepwise are a subset of the predictors in the (k+1) **TRUE**
+  iii. The predictors in the k-variable model identified by backward stepwise are a subset of the predictors in the (k+1)-variable model identified by forward stepwise selection. **FALSE**
+  iv. The predictors in thek-variable model identified by forwardstepwise are a subset of the predictors in the (k+1)-variable model identified by backward stepwise selection. **FALSE**
+  v. The predictors in the k-variable model identified by best subset are a subset of the predictors in the (k+1)-variable model identified by best subset selection. **FALSE**
+
+&nbsp;
+  
+#### **2.** For parts (a) through (c), indicate which of i. through iv. is correct. Justify your answer.
+
+
+
+  (a) The lasso, relative to least squares, is:
+    iii. Less flexible and hence will give improved prediction accuracy when its increase in bias is less than its decrease in variance. 
+    With increasing $\lambda$ variance starts to decrease faster than bias increases leading to a low in the U shaped MSE curve.  
+    
+  (b) Repeat (a) for ridge regression relative to least squares.
+    iii. Less flexible and hence will give improved prediction accuracy when its increase in bias is less than its decrease in variance. 
+    With increasing $\lambda$ variance starts to decrease faster than bias increases leading to a low in the U shaped MSE curve.  
+    
+  (c) Repeat (a) for non-linear methods relative to least squares.
+    ii. More flexible and hence will give improved prediction accuracy when its increase in variance is less than its decrease in bias.
+
+&nbsp;
+    
+#### **3.** Suppose we estimate the regression coefficients in a linear regression model by minimizing
+  $$\sum_{i=1}^n\Biggl(y_i - \beta_0 - \sum_{j=1}^p\beta_jx_{ij}\Biggr)\text{ subject to }\sum_{j=1}^p|\beta_j|\le s$$
+
+#### for a particular value of s. For parts (a) through (e), indicate which of i. through v. is correct. Justify your answer.  
+
+
+  
+  (a) As we increase s from 0, the training RSS will: 
+  If we start from zero we start with the least flexible and most restricted model and end with the least squares model. As the model gets more flexible the training RSS will steadily decrease. 
+  
+  (b) Repeat (a) for test RSS 
+  Test RSS will initially decrease and then start increasing again as the model gets more flexible and starts to overfit the training data.
+  
+  (c) Repeat (a) for variance.
+  If we start from zero we start with the least flexible and most restricted model and end with the least squares model. With increased flexibility variance always increases.
+  
+  (d) Repeat (a) for (squared) bias.
+  Squared bias steadily decreases with increased flexibility.
+  
+  (e) Repeat (a) for the irreducible error.
+  The irreducible error is a constant independet of the model.
+
+&nbsp;  
+  
+#### **4.** Suppose we estimate the regression coefficients in a linear regression model by minimizing 
+
+$$\sum_{i=1}^n\Biggl(y_i - \beta_0 - \sum_{j=1}^p\beta_jx_{ij}\Biggr) - \lambda\sum_{j=1}^p\beta_j^2$$
+
+#### for a particular value of $\lambda$. For parts (a) through (e), indicate which of i. through v. is correct. Justify your answer.
+&nbsp;
+  
+  (a) As we increase λ from 0, the training RSS will:  
+  
+  Training error will increase steadily with less and less flexibility in the model.
+  
+  (b) Repeat (a) for test RSS.
+  
+  Test error decreases initially and then starts to increase again as the model gets less and less flexible. 
+  
+  (c) Repeat (a) for variance.
+  
+  Variance decreases with less and less flexibility.
+  
+  (d) Repeat (a) for (squared) bias.
+  
+  Bias increases with less and less flexibility.
+  
+  (e) Repeat (a) for the irreducible error.
+  
+  The irreducible error is a constant independet of the model.
+
+&nbsp;
+
+#### **5.** It is well known that ridge regression tends to give similar coefficient values to correlated variables, where as the lasso may give quite different coefficient values to correlated variables. We will now explore this property in a very simple setting. Suppose that $n=2, p=2, x_{11}=x_{12}, x_{21}=x_{22}$. Furthermore, suppose that $y_1+y_2=0$ and $x_{11}+x_{21}=0$ and $x_{12}+x_{22}=0$, so that the estimate for the intercept in a least squares, ridge regression, or lasso model is zero: $\hat\beta_0=0$ 
+&nbsp;
+
+  (a) Write out the ridge regression optimization problem in this setting.
+  
+  With the information from above and $x_{11} = x_{12} = x_1$, $x_{11} = x_{12} = x_1$ we can write:
+  
+$$(y_1 - \hat{\beta}_1x_1 - \hat{\beta}_2x_1)^2 + (y_2 - \hat{\beta}_1x_2 - \hat{\beta}_2x_2)^2 + \lambda(\hat{\beta}_1^2 + \hat{\beta}_2^2)$$
+
+  (b) Argue that in this setting, the ridge coefficient estimates satisfy $\hat\beta_1 = \hat\beta_2$
+  
+  deriving the expression in (a) with respect to $\hat\beta_1$ and $\hat\beta_2$ and setting them equal to zero yields:
+  
+ 
+  $$\frac{\partial }{\partial \hat\beta_1}: (2\hat\beta_1x_{11}^2-2x_{11}y_1+2\hat\beta_2x_{11}x_{12}) + (2\hat\beta_1x_{21}^2-2x_{21}y_2+2\hat\beta_2x_{21}x_{22}) + 2\lambda\hat\beta_1 = 0$$
+ and 
+ $$\frac{\partial }{\partial \hat\beta_1}: (2\hat\beta_1x_{11}^2-2x_{11}y_1+2\hat\beta_2x_{11}x_{12}) + (2\hat\beta_1x_{21}^2-2x_{21}y_2+2\hat\beta_2x_{21}x_{22}) + 2\lambda\hat\beta_1 = 0$$
+  with a little bit of algebra we can rearange the equations above to:  
+  $$\lambda\hat\beta_1 = x_1y_1 + x_2y_2 + 2\hat\beta_1x_1x_2 + 2\hat\beta_2x_1x_2$$
+  and 
+  $$\lambda\hat\beta_2 = x_1y_1 + x_2y_2 + 2\hat\beta_1x_1x_2 + 2\hat\beta_2x_1x_2$$
+  
+  which yields $\hat\beta_1 = \hat\beta_2$
+  
+  (c) Write out the lasso optimization problem in this setting.
+  
+  
+  $$(y_1 - \hat{\beta}_1x_1 - \hat{\beta}_2x_1)^2 + (y_2 - \hat{\beta}_1x_2 - \hat{\beta}_2x_2)^2 + \lambda(|\hat{\beta}_1| + |\hat{\beta}_2|)$$
+  
+  (d) Argue that in this setting, the lasso coefficients $\hat\beta_1$and $\hat\beta_2$ are not unique in other words, there are many possible solutions to the optimization problem in (c). Describe these solutions. 
+
+&nbsp; 
+
+#### **6.** We will now explore (6.12) and (6.13) further.
+
+
+  (a) Consider (6.12) with $p= 1$. For some choice of $y_1$ and $\lambda>0$, plot (6.12) as a function of$\beta_1$. Your plot should confirm that (6.12) is solved by (6.14).
+  
+```{r}
+lambda = 3
+y= 4
+betas = seq(-10, 10, 0.2)
+ridge = function(beta, y, lambda) (y-beta)^2 + lambda*beta^2
+plot(betas, ridge(betas, y, lambda), pch = 20, xlab = "beta", ylab = "Ridge optimization")
+est.beta= y/(1+ lambda)
+points(est.beta, ridge(est.beta, y, lambda), col = "red", pch = 20, lwd=5)
+```
+  
+  (b) Consider (6.13) with $p= 1$. For some choice of $y_1$ and $\lambda>0$, plot (6.13) as a function of $\beta_1$. Your plot should confirm that (6.13) is solved by (6.15).  
+  
+```{r}
+lambda = 3
+y= 4
+betas = seq(-10, 10, 0.2)
+lasso = function(beta, y, lambda) (y-beta)^2 + lambda*abs(beta)
+plot(betas, lasso(betas, y, lambda), xlab="beta", main="Lasso Regression Optimization", pch=20)
+est.beta= y- (lambda/2)
+points(est.beta, lasso(est.beta, y, lambda), col = "red", pch = 20, lwd=5)
+```
+  
+ 
+&nbsp; 
+  
+### Applied
+
+&nbsp; 
+
+#### **8.** In this exercise, we will generate simulated data, and will then use this data to perform best subset selection. 
+  
+  (a) Use the rnorm() function to generate a predictor X of length n=100, as well as a noise vector $\epsilon$ of length n=100. 
+ 
+```{r}
+set.seed(1)
+X = rnorm(100)
+eps = rnorm(100)
+``` 
+
+  b) Generate a response vector $Y$ of length $n= 100$ according to the model $Y = \beta_0 + \beta_1X + \beta_2X^2 + \beta_3X^3 + \varepsilon$ where $\beta_0$, $\beta_1$,  $\beta_2$, $\beta_3$ are constants of your choice. 
+  
+```{r}
+b0 = 4
+b1 = 2
+b2 = 3
+b3 = 2
+Y = b0 + b1 * X + b2 * X^2 + b3 * X^3 + eps
+```  
+
+  (c) Use the regsubsets() function to perform best subset selection in order to choose the best model containing the predictors $X$,$X_2$,...,$X_{10}$. What is the best model obtained according to $C_p$, $BIC$, and adjusted $R^2$? Show some plots to provide evidence for your answer, and report the coefficients of the best model obtained. Note you will need to use the data.frame() function to create a single data set containing both $X$ and $Y$.  
+  
+```{r}
+library(leaps)
+data.full = data.frame(Y, X)
+regfit.full = regsubsets(Y~poly(X,10,raw=T), data=data.frame(Y,X), nvmax=10)
+summary = summary(regfit.full)
+par(mfrow=c(2,2))
+plot(summary$cp, xlab ="Number of variables", ylab="C_p", type="l")
+points(which.min(summary$cp), summary$cp[which.min(summary$cp)], col = "red", cex = 2, pch = 20)
+plot(summary$bic, xlab ="Number of variables", ylab="BIC", type="l")
+points(which.min(summary$bic), summary$bic[which.min(summary$bic)], col = "red", cex = 2, pch = 20)
+plot(summary$adjr2, xlab ="Number of variables", ylab="Adjusted R^2", type="l")
+points(which.max(summary$adjr2), summary$adjr2[which.max(summary$adjr2)], col = "red", cex = 2, pch = 20)
+```  
+  
+  (d) Repeat (c), using forward stepwise selection and also using backwards stepwise selection. How does your answer compare to the results in (c)?
+
+```{r}
+library(leaps)
+data.full = data.frame(Y, X)
+regfit.fwd = regsubsets(Y~poly(X,10,raw=T), data=data.frame(Y,X), nvmax=10, method="forward")
+summary = summary(regfit.fwd)
+par(mfrow=c(2,2))
+plot(summary$cp, xlab ="Number of variables", ylab="C_p", type="l")
+points(which.min(summary$cp), summary$cp[which.min(summary$cp)], col = "red", cex = 2, pch = 20)
+plot(summary$bic, xlab ="Number of variables", ylab="BIC", type="l")
+points(which.min(summary$bic), summary$bic[which.min(summary$bic)], col = "red", cex = 2, pch = 20)
+plot(summary$adjr2, xlab ="Number of variables", ylab="Adjusted R^2", type="l")
+points(which.max(summary$adjr2), summary$adjr2[which.max(summary$adjr2)], col = "red", cex = 2, pch = 20)
+```
+
+```{r}
+library(leaps)
+data.full = data.frame(Y, X)
+regfit.back = regsubsets(Y~poly(X,10,raw=T), data=data.frame(Y,X), nvmax=10, method="backward")
+summary = summary(regfit.back)
+par(mfrow=c(2,2))
+plot(summary$cp, xlab ="Number of variables", ylab="C_p", type="l")
+points(which.min(summary$cp), summary$cp[which.min(summary$cp)], col = "red", cex = 2, pch = 20)
+plot(summary$bic, xlab ="Number of variables", ylab="BIC", type="l")
+points(which.min(summary$bic), summary$bic[which.min(summary$bic)], col = "red", cex = 2, pch = 20)
+plot(summary$adjr2, xlab ="Number of variables", ylab="Adjusted R^2", type="l")
+points(which.max(summary$adjr2), summary$adjr2[which.max(summary$adjr2)], col = "red", cex = 2, pch = 20)
+```
+```{r}
+
+coef(regfit.full, which.max(summary(regfit.full)$adjr2))
+coef(regfit.fwd, which.max(summary(regfit.fwd)$adjr2))
+coef(regfit.back, which.max(summary(regfit.back)$adjr2))
+``` 
+  * C_p and Adjusted R^2 pick models with 4 variables while BIC picks a model with 3 variables. this is the same for every method out of the 3
+  * one difference is that with forward selection and Adjusted R^2 we have X^5 over x^9 
+ 
+ 
+ 
+  (e) Now fit a lasso model to the simulated data, again using $X, X^2, ...,X^{10}$ as predictors. Use cross-validation to select the optimal value of λ. Create plots of the cross-validation error as a function of λ. Report the resulting coefficient estimates, and discuss the results obtained.
+
+```{r}
+library(glmnet)
+xmat = model.matrix(Y~poly(X,10,raw=T))[,-1]
+lasso.mod = cv.glmnet(xmat, Y, alpha=1)
+(lambda = lasso.mod$lambda.min)
+par(mfrow=c(1,1))
+plot(lasso.mod)
+predict(lasso.mod, s=lambda, type="coefficients")
+``` 
+
+  (f) Now generate a response vector Y according to the model $Y = \beta_0 + \beta_7X^7 + \varepsilon,$, and perform best subset selection and the lasso. Discuss the results obtained.
+  
+  
+```{r}
+Y2 = 4 + 7*X^7 + eps
+data.full2 = data.frame(y = Y2,x = X)
+regfit.full2 = regsubsets(Y~poly(X,10,raw=T), data=data.full2, nvmax=10)
+summary2 = summary(regfit.full2)
+par(mfrow=c(2,2))
+plot(summary2$cp, xlab ="Number of variables", ylab="C_p", type="l")
+points(which.min(summary2$cp), summary2$cp[which.min(summary2$cp)], col = "red", cex = 2, pch = 20)
+plot(summary2$bic, xlab ="Number of variables", ylab="BIC", type="l")
+points(which.min(summary2$bic), summary2$bic[which.min(summary2$bic)], col = "red", cex = 2, pch = 20)
+plot(summary2$adjr2, xlab ="Number of variables", ylab="Adjusted R^2", type="l")
+points(which.max(summary2$adjr2), summary2$adjr2[which.max(summary2$adjr2)], col = "red", cex = 2, pch = 20)
+``` 
+```{r}
+coef(regfit.full2, which.min(summary2$cp))
+coef(regfit.full2, which.min(summary2$bic))
+coef(regfit.full2, which.min(summary2$adjr2))
+```  
+  With $C_p$ we pick a 4 variable model, with BIC a 3 variable model and with adjusted $R^2$ a 1 variable model.
+```{r}
+xmat = model.matrix(Y2~poly(X,10,raw=T))[,-1]
+lasso = cv.glmnet(xmat, Y2, alpha=1)
+(lambda = lasso$lambda.min)
+par(mfrow=c(1,1))
+plot(lasso)
+predict(lasso, s=lambda, type="coefficients")
+```  
+  
+  The Lasso picks the 1 variable model. Coefficiants differ quite heavily from best subsets. 
+
+&nbsp;  
+  
+#### **9.** In this exercise, we will predict the number of applications receive dusing the other variables in the College data set. 
+
+ 
+  
+  (a) Split the data set into a training set and a test set.
+```{r}
+library(ISLR)
+data(College)
+set.seed(1)
+trainid = sample(1:nrow(College), nrow(College)/2)
+train = College[trainid,]
+test = College[-trainid,]
+```  
+
+  (b) Fit a linear model using least squares on the training set, and report the test error obtained.
+  
+```{r}
+lm.fit = lm(Apps~., data=train)
+lm.pred = predict(lm.fit, test)
+lm.err = mean((test$Apps - lm.pred)^2)
+lm.err
+```
+
+  (c) Fit a ridge regression model on the training set, with $\lambda$ chosenby cross-validation. Report the test error obtained.
+```{r}
+library(glmnet)
+train.X = model.matrix(Apps ~ ., data = train)
+train.Y = train[, "Apps"]
+test.X = model.matrix(Apps ~ ., data = test)
+test.Y = test[, "Apps"]
+grid = 10 ^ seq(4, -2, length=100)
+ridge.mod = glmnet(train.X, train.Y, alpha =0, lambda=grid, thresh = 1e-12)
+lambda.best = ridge.mod$lambda.min
+ridge.pred = predict(ridge.mod, newx= test.X, s=lambda.best)
+(ridge.err = mean((test.Y - ridge.pred)^2))
+```
+  (d) Fit a lasso model on the training set, with $\lambda$ chosen by cross-validation. Report the test error obtained, along with the number of non-zero coefficient estimates.
+  
+```{r}
+lasso.mod = glmnet(train.X, train.Y, alpha =1, lambda=grid, thresh = 1e-12)
+lasso.cv = cv.glmnet(train.X, train.Y, alpha =1, lambda=grid, thresh = 1e-12)
+lambda.best = lasso.cv$lambda.min
+lasso.pred = predict(lasso.mod, newx= test.X, s=lambda.best)
+(lasso.err = mean((test.Y - lasso.pred)^2))
+predict(lasso.mod, s = lambda.best, type="coefficients")
+```
+  
+  
+  (e) Fit a PCR model on the training set, with M chosen by cross-validation. Report the test error obtained, along with the value of M selected by cross-validation.
+  
+```{r}
+library(pls)
+pcr.fit = pcr(Apps~., data=train, scale=TRUE, validation="CV")
+validationplot(pcr.fit, val.type="MSEP")
+summary(pcr.fit)
+pcr.pred = predict(pcr.fit, test, ncomp=10)
+
+```
+```{r}
+(pcr.err = mean((test$Apps - pcr.pred)^2))
+```
+  
+  (f) Fit a PLS model on the training set, with M chosen by cross-validation. Report the test error obtained, along with the value of M selected by cross-validation.
+  
+```{r}
+pls.fit = plsr(Apps~., data=train, scale=TRUE, validation="CV")
+validationplot(pls.fit, val.type="MSEP")
+```
+```{r}
+pls.pred = predict(pls.fit, test, ncomp=10)
+(pls.err = mean((test$Apps - pls.pred)^2))
+```
+  (g) Comment on the results obtained. How accurately can we predict the number of college applications received? Is there much difference among the test errors resulting from these five approaches?
+
+```{r}
+test.avg = mean(test$Apps)
+lm.r2 =1 - lm.err/mean((test.avg - test$Apps)^2)
+ridge.r2 =1 - ridge.err/mean((test.avg - test$Apps)^2)
+lasso.r2 =1 - lasso.err/mean((test.avg - test$Apps)^2)
+pcr.r2 =1 - pcr.err/mean((test.avg - test$Apps)^2)
+pls.r2 =1 - pls.err/mean((test.avg - test$Apps)^2)
+all.r2 = c(lm.r2, ridge.r2, lasso.r2, pcr.r2, pls.r2)
+names(all.r2) = c("lm", "ridge", "lasso", "pcr", "pls")
+barplot(all.r2 )
+```  
+  
+  All but the pcr model predict college applications with high accuracy.
+  
+&nbsp;
+
+#### **10.** We have seen that as the number of features used in a model increases, the training error will necessarily decrease, but the test error may not. We will now explore this in a simulated data set.
+  
+
+
+  (a) Generate a data set with p=20 features, n=1000 observations, and an associated quantitative response vector generated according to the model $Y = X\beta + \epsilon$, where $\beta$ has some elements that are exactly equal to zero.
+  
+```{r}
+set.seed(1)
+x = matrix(rnorm(1000 * 20), 1000, 20)
+b = rnorm(20)
+b[3] = 0
+b[4] = 0
+b[9] = 0
+b[11] = 0
+b[13] = 0
+b[14] = 0
+b[7] = 0
+b[19] = 0
+
+eps = rnorm(1000)
+y = x %*% b + eps
+```  
+  
+  (b) Split your data set into a training set containing 100 observations and a test set containing 900 observations.
+  
+```{r}
+trainid = sample(1:nrow(x), nrow(x)/10)
+X.train = x[-trainid,]
+Y.train = y[-trainid,]
+X.test = x[trainid,]
+Y.test = y[trainid,]
+```  
+  
+  (c) Perform best subset selection on the training set, and plot the training set MSE associated with the best model of each size.
+  
+```{r}
+data.train = data.frame(y = Y.train, x = X.train)
+regfit.full = regsubsets(y ~ ., data = data.train, nvmax = 20)
+train.mat = model.matrix(y ~ ., data = data.train, nvmax = 20)
+val.errors = rep(NA, 20)
+for (i in 1:20) {
+    coefi = coef(regfit.full, id = i)
+    pred = train.mat[, names(coefi)] %*% coefi
+    val.errors[i] = mean((pred - Y.train)^2)
+}
+plot(val.errors, xlab = "Number of predictors", ylab = "Training MSE", pch = 19, type = "b")
+```
+
+  (d) Plot the test set MSE associated with the best model of each size.
+
+```{r}
+data.test = data.frame(y = Y.test, x = X.test)
+test.mat = model.matrix(y ~ ., data = data.test, nvmax = 20)
+for (i in 1:20) {
+    coefi = coef(regfit.full, id = i)
+    pred = test.mat[, names(coefi)] %*% coefi
+    val.errors[i] = mean((pred - Y.test)^2)
+}
+plot(val.errors, xlab = "Number of predictors", ylab = "Test MSE", pch = 19, type = "b")
+```
+
+  (e) For which model size does the test set MSE take on its minimum value? Comment on your results. If it takes on its minimum value for a model containing only an intercept or a model containing all of the features, then play around with the way that you are generating the data in (a) until you come up with a scenario in which the test set MSE is minimized for an intermediate model size.
+  
+```{r}
+which.min(val.errors)
+```
+  (f) How does the model at which the test set MSE is minimized compare to the true model used to generate the data? Comment on the coefficient values.
+  
+```{r}
+coef(regfit.full, which.min(val.errors))
+```
+
+  * the model captured all zeroed out coefficients
+  
+  (g) Create a plot displaying $\sqrt{\sum_{j=1}^p(\beta_j - \hat{\beta}_j^r)^2} $ or a range of values of r where $\hat\beta_j^r$ is the jth coefficient estimate for the best model containing r coefficients. Comment on what you observe. How does this compare to the test MSE plot from (d)?
+  
+```{r}
+val.errors = rep(NA, 20)
+x_cols = colnames(x, do.NULL = FALSE, prefix = "x.")
+for (i in 1:20) {
+    coefi = coef(regfit.full, id = i)
+    val.errors[i] = sqrt(sum((b[x_cols %in% names(coefi)] - coefi[names(coefi) %in% x_cols])^2) + sum(b[!(x_cols %in% names(coefi))])^2)
+}
+plot(val.errors, xlab = "Number of coefficients", ylab = "Error between estimated and true coefficients", pch = 19, type = "b")
+```
+
+```{r}
+which.min(val.errors)
+```
+  * It minimizes with the same number of coefficients
+  
+&nbsp;
+
+#### **11.** We will now try to predict per capita crime rate in the Boston data set.
+
+
+
+  (a) Try out some of the regression methods explored in this chapter, such as best subset selection, the lasso, ridge regression, and PCR. Present and discuss results for the approaches that you consider.
+
+##### Best subset selection  
+```{r}
+library(MASS) 
+library(leaps)   
+library(glmnet)  
+data(Boston)
+set.seed(1)
+predict.regsubsets = function(object, newdata, id, ...) {
+    form = as.formula(object$call[[2]])
+    mat = model.matrix(form, newdata)
+    coefi = coef(object, id = id)
+    xvars = names(coefi)
+    mat[, xvars] %*% coefi
+}
+
+k = 10
+folds = sample(1:k, nrow(Boston), replace = TRUE)
+cv.errors = matrix(NA, k, 13, dimnames = list(NULL, paste(1:13)))
+for (j in 1:k) {
+    best.fit = regsubsets(crim ~ ., data = Boston[folds != j, ], nvmax = 13)
+    for (i in 1:13) {
+        pred = predict(best.fit, Boston[folds == j, ], id = i)
+        cv.errors[j, i] = mean((Boston$crim[folds == j] - pred)^2)
+    }
+}
+mean.cv.errors = apply(cv.errors, 2, mean)
+plot(mean.cv.errors, type = "b", xlab = "Number of variables", ylab = "CV error")
+
+```
+```{r}
+min(mean.cv.errors)
+regfit.best = regsubsets(crim~., data=Boston, nvmax=13)
+coef(regfit.best, 12)
+```
+##### Lasso
+
+```{r}
+x = model.matrix(crim ~ ., Boston)[, -1]
+y = Boston$crim
+cv.out = cv.glmnet(x, y, alpha = 1, type.measure = "mse")
+plot(cv.out)
+```
+```{r}
+cv.out
+```
+##### Ridge
+
+```{r}
+cv.out = cv.glmnet(x, y, alpha = 0, type.measure = "mse")
+cv.out
+```
+##### PCR
+
+```{r}
+pcr.fit = pcr(crim ~ ., data = Boston, scale = TRUE, validation = "CV")
+validationplot(pcr.fit, val.type = "MSEP")
+```
+
+  (b) Propose a model (or set of models) that seem to perform well on this data set, and justify your answer. Make sure that you are evaluating model performance using validation set error, cross-validation, or some other reasonable alternative, as opposed to using training error.
+  
+  * Best subset selection yields the best results.
+  
+  (c) Does your chosen model involve all of the features in the dataset? Why or why not?
+  
+  * The best model is the 12 feature model from best subset selection. 1 Feature is missing.

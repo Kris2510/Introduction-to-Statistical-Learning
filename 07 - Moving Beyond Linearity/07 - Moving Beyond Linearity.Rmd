@@ -1,0 +1,658 @@
+---
+title: "An Introduction to Statistical Learning"
+output:
+  html_document: default
+  word_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(ISLR)
+library(MASS)
+```
+&nbsp;&nbsp;
+
+## 7. Moving Beyond Linearity 
+
+&nbsp;
+
+### Conceptual
+
+&nbsp;
+
+#### **1.** It was mentioned in the chapter that a cubic regression spline with one knot at $\xi$ can be obtained using a basis of the form $x, x^2, x^3, (x-\xi)^3_+$, where $(x - \xi)^3_+ = (x - \xi)^3$ if $x >\xi$ and equals $0$ otherwise. We will now show that a function of the form $f(x) = \beta_0 + \beta_1x + \beta_2x^2 + \beta_3x^3 + \beta_4(x - \xi)^3_+$ is indeed a cubic regression spline, regardless of the values of $\beta_0,\beta_1,\beta_2,\beta_3,\beta_4$
+
+  (a) Find a cubic polynomial $f_1(x) = a_1 + b_1x + c_1x^2 + d_1x^3$ such that $f(x)=f_1(x)$ for all $x\le\xi$. Express $a_1,b_1,c_1,d_1$ in terms of $\beta_0,\beta_1,\beta_2,\beta_3,\beta_4$.
+  
+  Since $x\le\xi$
+  
+  &nbsp;
+  
+  $f(x) = \beta_0 + \beta_1x + \beta_2x^2 + \beta_3x^3$,
+  
+  &nbsp;
+  
+  therefore $a_1 = \beta_0, b_1=\beta_1, c_1 = \beta_2$ and $d_1 = \beta_3$
+  
+&nbsp;
+ 
+  (b) Find a cubic polynomial $f_2(x) = a_2 + b_2x + c_2x^2 + d_2x^3$ such that $f(x)=f_2(x)$ for all $x>\xi$. Express $a_2,b_2,c_2,d_2$ in terms of $\beta_0,\beta_1,\beta_2,\beta_3,\beta_4$.
+  
+  &nbsp;
+  
+  For $x>\xi$:
+  
+  &nbsp;
+  
+  $f(x) = \beta_0 + \beta_1x + \beta_2x^2 + \beta_3x^3 + \beta_4(x - \xi)^3$  
+  
+  &nbsp;
+  
+  which we can rearrange to   
+  
+  &nbsp;
+  
+  $(\beta_0 - \beta_4\xi^3) + (\beta_1 + 3\xi^2\beta_4)x + (\beta_2 - 3\beta_4\xi)x^2 + (\beta_3 + \beta_4)x^3$   
+  
+  &nbsp;
+  
+  and therefore have  
+  
+  &nbsp;
+  
+  $a_2 = \beta_0 - \beta_4\xi^3$, $b_2 = \beta_1 + 3\xi^2\beta_4$, $c_2 = \beta_2 - 3\beta_4\xi$ and $d_2 = \beta_3 + \beta_4$  
+  
+  &nbsp;
+  
+  (c) Show that $f_1(\xi) = f_2(\xi)$. That is $f(x)$ is continous at $\xi$.
+  
+  &nbsp;
+  
+  $f_1(\xi) = \beta_0 + \beta_1\xi + \beta_2\xi^2 + \beta_3\xi^3$
+  
+  &nbsp;
+  
+  equals
+  
+  &nbsp;
+  
+  $f_2(\xi) = (\beta_0 - \beta_4\xi^3) + (\beta_1 + 3\xi^2\beta_4)\xi + (\beta_2 - 3\beta_4\xi)\xi^2 + (\beta_3 + \beta_4)\xi^3 = \beta_0 + \beta_1\xi + \beta_2\xi^2 + \beta_3\xi^3$.
+  
+  &nbsp;
+  
+  (d) Show that $f_1'(\xi) = f_2'(\xi)$. That is $f'(x)$ is continous at $\xi$.
+  
+  &nbsp;
+  
+  $f_1'(\xi) = \beta_1 + 2\beta_2\xi + 3\beta_3\xi^2$
+  
+  &nbsp;
+  
+  equals
+  
+  &nbsp;
+  
+  $f_2'(\xi) = \beta_1 + 3\xi^2\beta_4 + 2(\beta_2 - 3\beta_4\xi)\xi + 3(\beta_3 + \beta_4)\xi^2 = \beta_1 + 2\beta_2\xi + 3\beta_3\xi^2$
+  
+   &nbsp;
+  
+  (e) Show that $f_1''(\xi) = f_2''(\xi)$. That is $f''(x)$ is continous at $\xi$. Therefore, $f(x)$ is indeed a cubic spline.
+  
+  &nbsp;
+  
+  $f_1''(\xi) = 2\beta_2 + 6\beta_3\xi$
+  
+  &nbsp;
+  
+  equals
+  
+  &nbsp;
+  
+  $f_2''(\xi) = 2(\beta_2 - 3\beta_4\xi) + 6(\beta_3 + \beta_4)\xi = 2\beta_2 + 6\beta_3\xi$
+  
+   &nbsp;
+   
+#### **2.** Suppose that a curve $\hat{g}$ is computed to smoothly fit a set of n points using the following formula:
+
+$$\hat{g} = \arg\min_g\Biggl(\sum_{i=1}^n(y_i - g(x_i))^2 + \lambda\int[g^{(m)}(x)]^2dx\biggr)$$
+
+#### where $g^{(m)}$ represents the m-th derivative of g(and g(0)=g). Provide example sketches of $\hat{g}$ in each of the following scenarios.
+
+&nbsp;
+
+  (a) $\lambda = \infty, m= 0$
+  * $g = 0$, straight line through 0
+  (b) $\lambda = \infty, m= 1$
+  * $g = a$, straight line with intercept
+  (c) $\lambda = \infty, m= 2$
+  * $g = ax + b$, intercept and slope
+  (d) $\lambda = \infty, m= 3$
+  * $g = ax^2 +bx+c$, parabola
+  (e) $\lambda = 0, m= 3$
+  * g will be very jumpy and exactly interpolate the training observations
+ 
+&nbsp;
+  
+#### **3.** Suppose we fit a curve with basis functions $b_1(X) = X$, $b_2(X) = (X - 1)^2I(X\ge 1)$. We fit the linear regression model $Y = \beta_0 + \beta_1b_1(X) + \beta_2b_2(X) + \varepsilon,$ and obtain coefficient estimates $\hat\beta_0 = 1$, $\hat\beta_1 = 1$,$\hat\beta_2 = -2$. Sketch the estimated curve between $X=−2$ and $X= 2$. Note the intercepts, slopes, and other relevant information.
+
+```{r}
+x = -2:2
+y = 1 + x + -2 * (x-1)^2 * I(x>1)
+plot(x, y)
+```
+
+  * function is linear for all $x < 1$ and quadratic for $x \ge 1$
+
+&nbsp;
+
+#### **4.** Suppose we fit a curve with basis functions $b_1(X) = I(0\le X\le 2) - (X - 1)I(1\le X\le 2)$, $b_2(X) = (X - 3)I(3\le X\le 4) + I(4\le X\le 5)$. We fit the linear regression model $Y = \beta_0 + \beta_1b_1(X) + \beta_2b_2(X) + \varepsilon,$ and obtain coefficient estimates $\hat\beta_0 = 1$, $\hat\beta_1 = 1$,$\hat\beta_2 = 3$. Sketch the estimated curve between $X=−2$ and $X= 2$. Note the intercepts, slopes, and other relevant information.
+
+```{r}
+x = -2:2
+y = c(1 + 0 + 0, # x = -2
+      1 + 0 + 0, # x = -1
+      1 + 1 + 0, # x = 0
+      1 + (1-0) + 0, # x = 1
+      1 + (1-1) + 0 # x =2
+      )
+plot(x,y)
+```
+
+  * the function is either constant or linear depending on the interval
+  
+#### **5.** Consider two curves, $\hat{g}_1$  and $\hat{g}_2$, defined by
+
+$$\hat{g}_1 = \arg\min_g\Biggl(\sum_{i=1}^n(y_i - g(x_i))^2 + \lambda\int[g^{(3)}(x)]^2dx\biggr)$$
+$$\hat{g}_2 = \arg\min_g\Biggl(\sum_{i=1}^n(y_i - g(x_i))^2 + \lambda\int[g^{(4)}(x)]^2dx\biggr)$$
+
+#### where $g^{(m)}$ represents the m-th derivative of g.
+
+  (a) As $\lambda\rightarrow\infty$, will $\hat{g}_1$ or $\hat{g}_2$ have the smaller training RSS?
+  * $\hat{g}_2$ as the more flexible approach will have the lower training error 
+  (b) As $\lambda\rightarrow\infty$, will $\hat{g}_1$ or $\hat{g}_2$ have the smaller training RSS?
+  * cannot say for sure, $\hat{g}_2$ might overfit so $\hat{g}_1$ could have a lower test error
+  (c) For $\lambda = 0$, will $\hat{g}_2$ have the smaller training and test RSS? 
+  * for $\lambda = 0$, $\hat{g}_1 = \hat{g}_2$ and they therefore have the same training and test errors
+  
+  &nbsp;
+
+### Applied
+
+&nbsp;
+
+#### **6.** In this exercise, you will further analyze the Wage data set considered throughout this chapter.
+  (a) Perform polynomial regression to predict wage using age. Use cross-validation to select the optimal degree d for the polynomial. What degree was chosen, and how does this compare to the results of hypothesis testing using ANOVA? Make a plot of the resulting polynomial fit to the data.
+  
+```{r}
+require(ISLR)
+require(boot)
+data(Wage)
+set.seed(42)
+
+
+cv.error = rep(0,10)
+for (i in 1:10) {
+  glm.fit = glm(wage~poly(age,i), data=Wage)
+  cv.error[i] = cv.glm(Wage, glm.fit, K=10)$delta[1]  
+}
+cv.error
+plot(cv.error, type="b")  
+```
+```{r}
+fit.01 = lm(wage~age, data=Wage)
+fit.02 = lm(wage~poly(age,2), data=Wage)
+fit.03 = lm(wage~poly(age,3), data=Wage)
+fit.04 = lm(wage~poly(age,4), data=Wage)
+fit.05 = lm(wage~poly(age,5), data=Wage)
+fit.06 = lm(wage~poly(age,6), data=Wage)
+fit.07 = lm(wage~poly(age,7), data=Wage)
+fit.08 = lm(wage~poly(age,8), data=Wage)
+fit.09 = lm(wage~poly(age,9), data=Wage)
+fit.10 = lm(wage~poly(age,10), data=Wage)
+anova(fit.01,fit.02,fit.03,fit.04,fit.05,fit.06,fit.07,fit.08,fit.09,fit.10)
+```
+  * Based on Anova 2 or 3 degree poly performs best, compared to 4th degree with cv.
+```{r fig.width=7, fig.height=6}
+attach(Wage)
+agelims=range(age)
+age.grid=seq(from=agelims[1],to=agelims[2])
+fit = lm(wage ~ poly(age, 3), data = Wage)
+preds=predict(fit,newdata=list(age=age.grid),se=TRUE)
+se.bands=cbind(preds$fit+2*preds$se,preds$fit-2*preds$se)
+plot(age,wage,col="darkgrey")
+lines(age.grid,preds$fit,lwd=2,col="blue")
+matlines(age.grid,se.bands,col="blue",lty=2)
+```
+
+  (b) Fit a step function to predict wage using age, and perform cross-validation to choose the optimal number of cuts. Make a plot of the fit obtained.
+  
+```{r fig.width=6, fig.height=4}
+cv.error = rep(0,9)
+for (i in 2:10) {
+  Wage$age.cut = cut(Wage$age,i)
+  glm.fit = glm(wage~age.cut, data=Wage)
+  cv.error[i-1] = cv.glm(Wage, glm.fit, K=10)$delta[1]
+}
+cv.error
+plot(2:10, cv.error, type="b")
+```
+  
+```{r fig.width=6, fig.height=4}
+cut.fit = glm(wage~cut(age,8), data=Wage)
+preds = predict(cut.fit, newdata=list(age=age.grid), se=TRUE)
+se.bands = preds$fit + cbind(2*preds$se.fit, -2*preds$se.fit)
+plot(Wage$age, Wage$wage, xlim=agelims, cex=0.5, col="darkgrey")
+lines(age.grid, preds$fit, lwd=2, col="blue")
+matlines(age.grid, se.bands, lwd=1, col="blue", lty=3)
+```  
+  
+#### **7.** The Wage data set contains a number of other features not explored in this chapter, such as marital status (maritl), job class (jobclass), and others. Explore the relationships between some of these other predictors and wage, and use non-linear fitting techniques in order to fit flexible models to the data. Create plots of the results obtained, and write a summary of your findings.
+
+```{r}
+library(gam)
+par(mfrow=c(3,3))
+plot(Wage$maritl, Wage$wage)
+plot(Wage$jobclass, Wage$wage)
+plot(Wage$race, Wage$wage)
+plot(Wage$education, Wage$wage)
+plot(Wage$health, Wage$wage)
+plot(Wage$age, Wage$wage)
+plot(Wage$year, Wage$wage)
+```
+  
+```{r}
+library(gam)
+gam.fit1 = gam(wage~s(age,2)+year+education, data=Wage)
+gam.fit2 = gam(wage~s(age,2)+year+education+maritl, data=Wage)
+gam.fit3 = gam(wage~s(age,2)+year+education+maritl+race, data=Wage)
+gam.fit4 = gam(wage~s(age,2)+year+education+maritl+race+ health+jobclass, data=Wage)
+gam.fit5 = gam(wage~s(age,2)+year+education+maritl+ health+jobclass, data=Wage)
+gam.fit6 = gam(wage~s(age,2)+year+education+race+health, data=Wage)
+gam.fit7 = gam(wage~s(age,3)+year+education+race+health, data=Wage)
+gam.fit8 = gam(wage~s(age,4)+year+education+race+health, data=Wage)
+gam.fit9 = gam(wage~s(age,5)+year+education+race+health, data=Wage)
+anova(gam.fit1, gam.fit2, gam.fit3, gam.fit4, gam.fit5, gam.fit6, gam.fit7, gam.fit8, gam.fit9, test= "F" )
+``` 
+  
+```{r fig.width=6, fig.height=4}
+
+deviance(gam.fit1)
+deviance(gam.fit2)
+deviance(gam.fit3)
+deviance(gam.fit4)
+deviance(gam.fit5)
+deviance(gam.fit6)
+deviance(gam.fit7)
+deviance(gam.fit8)
+deviance(gam.fit9)
+summary(gam.fit4)
+plot(gam.fit4, se=TRUE, col="blue")
+```
+  
+#### **8.** Fit some of the non-linear models investigated in this chapter to the Auto data set. Is there evidence for non-linear relationships in this data set? Create some informative plots to justify your answer.  
+
+
+```{r}  
+require(boot)
+require(gam)
+require(ISLR)
+data(Auto)
+set.seed(1)
+```
+
+
+```{r}
+pairs(Auto)
+```
+
+  * there should be some  nonlinear relationships in this data set
+  
+##### **mpg - displacement **
+
+```{r fig.width=6, fig.height=4}
+deltas = rep(NA, 15)
+for (i in 1:15) {
+    fit = glm(mpg ~ poly(displacement, i), data = Auto)
+    deltas[i] = cv.glm(Auto, fit, K = 10)$delta[1]
+}
+plot(1:15, deltas, xlab = "Degree", ylab = "Test MSE", type = "l")
+d.min = which.min(deltas)
+points(which.min(deltas), deltas[which.min(deltas)], col = "red", cex = 2, pch = 20)
+```  
+```{r fig.width=6, fig.height=4}
+cvs = rep(NA, 15)
+for (i in 2:15) {
+    Auto$dis.cut = cut(Auto$displacement, i)
+    fit = glm(mpg ~ dis.cut, data = Auto)
+    cvs[i] = cv.glm(Auto, fit, K = 10)$delta[1]
+}
+plot(2:15, cvs[-1], xlab = "Cuts", ylab = "Test MSE", type = "l")
+d.min = which.min(cvs)
+points(which.min(cvs), cvs[which.min(cvs)], col = "red", cex = 2, pch = 20)
+``` 
+```{r fig.width=6, fig.height=4}
+library(splines)
+cvs = rep(NA, 15)
+for (i in 3:15) {
+    fit = glm(mpg ~ ns(displacement, df = i), data = Auto)
+    cvs[i] = cv.glm(Auto, fit, K = 10)$delta[1]
+}
+plot(3:15, cvs[-c(1, 2)], xlab = "Cuts", ylab = "Test MSE", type = "l")
+d.min = which.min(cvs)
+points(which.min(cvs), cvs[which.min(cvs)], col = "red", cex = 2, pch = 20)
+``` 
+
+##### **mpg horsepower**
+
+```{r fig.width=6, fig.height=4}
+deltas = rep(NA, 15)
+for (i in 1:15) {
+    fit = glm(mpg ~ poly(horsepower, i), data = Auto)
+    deltas[i] = cv.glm(Auto, fit, K = 10)$delta[1]
+}
+plot(1:15, deltas, xlab = "Degree", ylab = "Test MSE", type = "l")
+d.min = which.min(deltas)
+points(which.min(deltas), deltas[which.min(deltas)], col = "red", cex = 2, pch = 20)
+``` 
+
+```{r fig.width=6, fig.height=4}
+cvs = rep(NA, 15)
+for (i in 2:15) {
+    Auto$dis.cut = cut(Auto$horsepower, i)
+    fit = glm(mpg ~ dis.cut, data = Auto)
+    cvs[i] = cv.glm(Auto, fit, K = 10)$delta[1]
+}
+plot(2:15, cvs[-1], xlab = "Cuts", ylab = "Test MSE", type = "l")
+d.min = which.min(cvs)
+points(which.min(cvs), cvs[which.min(cvs)], col = "red", cex = 2, pch = 20)
+``` 
+```{r fig.width=6, fig.height=4}
+library(splines)
+cvs = rep(NA, 15)
+for (i in 3:15) {
+    fit = glm(mpg ~ ns(horsepower, df = i), data = Auto)
+    cvs[i] = cv.glm(Auto, fit, K = 10)$delta[1]
+}
+plot(3:15, cvs[-c(1, 2)], xlab = "Cuts", ylab = "Test MSE", type = "l")
+d.min = which.min(cvs)
+points(which.min(cvs), cvs[which.min(cvs)], col = "red", cex = 2, pch = 20)
+``` 
+
+##### **mpg - weight**
+
+```{r fig.width=6, fig.height=4}
+deltas = rep(NA, 15)
+for (i in 1:15) {
+    fit = glm(mpg ~ poly(weight, i), data = Auto)
+    deltas[i] = cv.glm(Auto, fit, K = 10)$delta[1]
+}
+plot(1:15, deltas, xlab = "Degree", ylab = "Test MSE", type = "l")
+d.min = which.min(deltas)
+points(which.min(deltas), deltas[which.min(deltas)], col = "red", cex = 2, pch = 20)
+```  
+```{r fig.width=6, fig.height=4}
+cvs = rep(NA, 15)
+for (i in 2:15) {
+    Auto$dis.cut = cut(Auto$weight, i)
+    fit = glm(mpg ~ dis.cut, data = Auto)
+    cvs[i] = cv.glm(Auto, fit, K = 10)$delta[1]
+}
+plot(2:15, cvs[-1], xlab = "Cuts", ylab = "Test MSE", type = "l")
+d.min = which.min(cvs)
+points(which.min(cvs), cvs[which.min(cvs)], col = "red", cex = 2, pch = 20)
+```   
+```{r fig.width=6, fig.height=4}
+library(splines)
+cvs = rep(NA, 15)
+for (i in 3:15) {
+    fit = glm(mpg ~ ns(weight, df = i), data = Auto)
+    cvs[i] = cv.glm(Auto, fit, K = 10)$delta[1]
+}
+plot(3:15, cvs[-c(1, 2)], xlab = "Cuts", ylab = "Test MSE", type = "l")
+d.min = which.min(cvs)
+points(which.min(cvs), cvs[which.min(cvs)], col = "red", cex = 2, pch = 20)
+```  
+
+##### **GAMs**
+
+```{r}
+fit = gam(mpg ~ s(displacement, 11) + s(horsepower, 10)+ s(weight, 7)+ acceleration, data = Auto)
+deviance(fit)
+summary(fit)
+```
+
+
+&nbsp;
+
+#### **9.** This question uses the variables dis (the weighted mean of distances to five Boston employment centers) and nox (nitrogen oxides concentration in parts per 10 million) from the Boston data. We will treat dis as the predictor and nox as the response.
+
+&nbsp;
+
+  (a) Use the poly() function to fit a cubic polynomial regression to predict nox using dis. Report the regression output, and plot the resulting data and polynomial fits.
+  
+```{r}
+library(MASS)
+set.seed(1)
+poly.fit = lm(nox ~ poly(dis, 3), data = Boston)
+summary(poly.fit)
+```
+```{r fig.width=6, fig.height=4}
+dislims = range(Boston$dis)
+dis.grid = seq(from = dislims[1], to = dislims[2], by = 0.1)
+preds = predict(poly.fit, list(dis = dis.grid))
+plot(nox ~ dis, data = Boston, col = "darkgrey")
+lines(dis.grid, preds, col = "red", lwd = 2)
+
+```
+
+  (b) Plot the polynomial fits for a range of different polynomial degrees (say, from 1 to 10), and report the associated residual sum of squares.
+```{r}
+rss.error = rep(0,10)
+for (i in 1:10) {
+  lm.fit = lm(nox~poly(dis,i), data=Boston)
+  rss.error[i] = sum(lm.fit$residuals^2)
+}
+plot(rss.error, type="b")
+```
+
+  (c) Perform cross-validation or another approach to select the optimal degree for the polynomial, and explain your results.
+```{r}
+require(boot)
+set.seed(1)
+cv.error = rep(NA,10)
+for (i in 1:10) {
+  glm.fit = glm(nox~poly(dis,i), data=Boston)
+  cv.error[i] = cv.glm(Boston, glm.fit, K=10)$delta[1] 
+}
+plot(cv.error, type="b") 
+```
+
+  * 4th degree polynomial performs best, but 2nd degree isn't much worse
+  
+  (d) Use the bs() function to fit a regression spline to predict nox using dis. Report the output for the fit using four degrees of freedom. How did you choose the knots? Plot the resulting fit.
+```{r}
+rs.fit = lm(nox ~ bs(dis, knots = c(4, 7, 11)), data = Boston)
+summary(rs.fit)
+```
+```{r}
+pred = predict(rs.fit, list(dis = dis.grid))
+plot(nox ~ dis, data = Boston, col = "darkgrey")
+lines(dis.grid, preds, col = "red", lwd = 2)
+```
+
+  (e) Now fit a regression spline for a range of degrees of freedom, and plot the resulting fits and report the resulting RSS. Describe the results obtained. 
+  
+```{r}
+rss = rep(NA, 15)
+for (i in 3:15) {
+    range.fit = lm(nox ~ bs(dis, df = i), data = Boston)
+    rss[i] = sum(range.fit$residuals^2)
+}
+plot(3:15, rss[-c(1, 2)], xlab = "Degrees of freedom", ylab = "RSS", type = "l")
+```
+
+  (f) Perform cross-validation or another approach in order to select the best degrees of freedom for a regression spline on this data. Describe your results.
+  
+```{r, warning = FALSE}
+cv.error = rep(0,7)
+for (i in 4:10) {
+  glm.fit = glm(nox~bs(dis, df=i), data=Boston)
+  cv.error[i-3] = cv.glm(Boston, glm.fit, K=10)$delta[1]
+}
+plot(4:10, cv.error, type="b")  
+```
+  
+&nbsp;
+
+#### **10.** This question relates to the College data set.
+
+&nbsp;
+
+  (a) Split the data into a training set and a test set. Using out-of-state tuition as the response and the other variables as the predictors, perform forward stepwise selection on the training set in order to identify a satisfactory model that uses just a subset of the predictors.
+```{r}
+require(ISLR)
+require(leaps)
+data(College)
+set.seed(1)
+
+trainid = sample(1:nrow(College), nrow(College)/2)
+train = College[trainid,]
+test = College[-trainid,]
+
+predict.regsubsets = function(object, newdata, id, ...){
+  form = as.formula(object$call[[2]])
+  mat = model.matrix(form, newdata)
+  coefi = coef(object, id=id)
+  xvars = names(coefi)
+  mat[,xvars]%*%coefi
+}
+
+fit.fwd = regsubsets(Outstate~., data=train, nvmax=ncol(College)-1, method ="forward")
+fwd.summary = summary(fit.fwd)
+
+err.fwd = rep(NA, ncol(College)-1)
+for(i in 1:(ncol(College)-1)) {
+  pred.fwd = predict(fit.fwd, test, id=i)
+  err.fwd[i] = mean((test$Outstate - pred.fwd)^2)
+}
+
+par(mfrow=c(2,2))
+plot(err.fwd, type="b", main="Test MSE", xlab="Number of Predictors")
+min.mse = which.min(err.fwd)  
+points(min.mse, err.fwd[min.mse], col="red", pch=4, lwd=5)
+plot(fwd.summary$adjr2, type="b", main="Adjusted R^2", xlab="Number of Predictors")
+max.adjr2 = which.max(fwd.summary$adjr2)  
+points(max.adjr2, fwd.summary$adjr2[max.adjr2], col="red", pch=4, lwd=5)
+plot(fwd.summary$cp, type="b", main="cp", xlab="Number of Predictors")
+min.cp = which.min(fwd.summary$cp)  
+points(min.cp, fwd.summary$cp[min.cp], col="red", pch=4, lwd=5)
+plot(fwd.summary$bic, type="b", main="bic", xlab="Number of Predictors")
+min.bic = which.min(fwd.summary$bic)  
+points(min.bic, fwd.summary$bic[min.bic], col="red", pch=4, lwd=5)
+```
+  
+  * since scores aren't improving that much after 6 predictors we will chose the 6 predictor model
+```{r}
+err.fwd[6] 
+```
+  
+  (b) Fit a GAM on the training data, using out-of-state tuition as the response and the features selected in the previous step as the predictors. Plot the results, and explain your findings.
+  
+```{r}
+library(gam)
+gam.fit = gam(Outstate ~ Private + s(Room.Board, 3) + s(PhD, 3) + s(perc.alumni, 3) + s(Expend, 3) + s(Grad.Rate, 3), data=train)
+par(mfrow=c(2, 3))
+plot(gam.fit, se=T, col="blue")
+```
+
+  (c) Evaluate the model obtained on the test set, and explain the results obtained.
+```{r}
+pred = predict(gam.fit, test)
+(mse.error = mean((test$Outstate - pred)^2))
+```  
+
+  (d) For which variables, if any, is there evidence of a non-linear relationship with the response?
+```{r}
+summary(gam.fit)
+``` 
+
+  * only Expend is stat. sig. on the .05 level
+  
+  
+&nbsp;
+
+#### **11.** In Section 7.7, it was mentioned that GAMs are generally fit using a backfitting approach. The idea behind backfitting is actually quite simple. We will now explore backfitting in the context of multiple linear regression. Suppose that we would like to perform multiple linear regression, but we do not have software to do so. Instead, we only have software to perform simple linear regression. Therefore, we take the following iterative approach: we repeatedly hold all but one coefficient estimate fixed at its current value, and update only that coefficient estimate using a simple linear regression. The process is continued until convergence that is, until the coefficient estimates stop changing. We now try this out on a toy example.
+
+&nbsp;
+
+  (a) Generate a response Y and two predictors $X_1$ and $X_2$, with n= 100.
+```{r}
+set.seed(1)
+X1= rnorm(100)
+X2 = rnorm(100)
+eps = rnorm(100, sd=0.1)
+Y = 3 + 2.4* X1 + 0.66 *X2 + eps
+```  
+  
+  (b) Initialize  $\hat\beta_1$ to take on a value of your choice. It does not matter what value you choose.
+```{r}
+beta1 = 10
+```
+
+  (c) Keeping $\hat\beta_1$ fixed, fit the model $Y - \hat\beta_1X_1 = \beta_0 + \beta_2X_2 + \epsilon$
+```{r}
+a = Y-beta1*X1
+beta2 = lm(a~X2)$coef[2]
+```  
+
+  (d) Keeping $\hat\beta_2$ fixed, fit the model $Y - \hat\beta_2X_2 = \beta_0 + \beta_1X_1 + \epsilon$
+```{r}
+a = Y-beta2*X2
+beta1 = lm(a~X1)$coef[2]
+``` 
+
+  (e) Write a for loop to repeat (c) and (d) 1,000 times. Report the estimates of $\hat\beta_0$,$\hat\beta_1$ ,and $\hat\beta_2$ at each iteration of the for loop. Create a plot in which each of these values is displayed, with $\hat\beta_0$,$\hat\beta_1$ ,and $\hat\beta_2$ each shown in a different color.
+```{r}
+beta0 = rep(0, 1000)
+beta1 = rep(0, 1000)
+beta2 = rep(0, 1000)
+beta1 = 5
+for (i in 1:1000) {
+    a = Y - beta1[i] * X1
+    beta2[i] = lm(a ~ X2)$coef[2]
+    a = Y - beta2[i] * X2
+    lm.fit = lm(a ~ X1)
+    if (i < 1000) {
+        beta1[i + 1] = lm.fit$coef[2]
+    }
+    beta0[i] = lm.fit$coef[1]
+}
+
+plot(1:1000, beta0, type="l", xlab="iteration", ylab="betas", ylim=c(0, 4), col="green")
+lines(1:1000, beta1, col="red")
+lines(1:1000, beta2, col="blue")
+legend('center', c("beta0","beta1","beta2"), lty=1, col=c("green","red","blue"))
+```
+
+  (f) Compare your answer in (e) to the results of simply performing multiple linear regression to predict Y using $X_1$ and $X_2$. Use the abline() function to overlay those multiple linear regression coefficient estimates on the plot obtained in (e).
+
+```{r}
+lm.fit = lm(Y ~ X1 + X2)
+plot(1:1000, beta0, type = "l", xlab = "iteration", ylab = "betas", ylim=c(0, 4), col = "green")
+lines(1:1000, beta1, col = "red")
+lines(1:1000, beta2, col = "blue")
+abline(h = lm.fit$coef[1], lty = "dashed", lwd = 3, col = rgb(0, 0, 0, alpha = 0.4))
+abline(h = lm.fit$coef[2], lty = "dashed", lwd = 3, col = rgb(0, 0, 0, alpha = 0.4))
+abline(h = lm.fit$coef[3], lty = "dashed", lwd = 3, col = rgb(0, 0, 0, alpha = 0.4))
+legend("center", c("beta0", "beta1", "beta2", "multiple regression"), lty = c(1, 
+    1, 1, 2), col = c("green", "red", "blue", "black"))
+``` 
+
+  (g) On this data set, how many backfitting iterations were requiredin order to obtain a “good” approximation to the multiple regression coefficient estimates?
+```{r}
+beta0[1:3]
+beta1[1:3]
+beta2[1:3]
+```
+
+  * in this case one iteration is enough

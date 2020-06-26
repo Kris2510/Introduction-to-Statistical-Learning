@@ -1,0 +1,557 @@
+---
+title: "An Introduction to Statistical Learning"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(ISLR)
+library(MASS)
+```
+&nbsp;&nbsp;
+
+## 4. Classification - Exercises 
+
+&nbsp;
+
+### Conceptual
+
+&nbsp;
+
+#### **1.** Using a little bit of algebra, prove that $p(X) = \frac {e^{\beta_0 + \beta_1 X}} {1 + e^{\beta_0 + \beta_1 X}}$ (4.2) is equivalent to $\frac{p(X)}{1-p(X)} = e^{\beta_0+\beta_1X}$ (4.3). In other words, the logistic function representation and logit representation for the logistic regression model are equivalent.
+
+
+
+  * the first step is to stubstitute $z$ for $e^{\beta_0+\beta_1X}$
+
+  * plugin to equation (4.2) $p(X) = \frac{Z}{1+Z}$ 
+
+  * which we can transform to $\frac{1}{p(X)} = \frac{1+Z}{Z} = 1+\frac{1}{Z}$
+ 
+  * solve for  $Z = \frac{1}{\frac{1}{p(X)}-1} = \frac{1}{\frac{1-p(X)}{p(X)}} = \frac{p(X)}{1-p(X)}$
+
+&nbsp;
+
+#### **2.** It was stated in the text that classifying an observation to the class for which  
+$p_k(x) = \frac {\pi_k \frac {1} {\sqrt{2 \pi} \sigma} \exp(- \frac {1} {2 \sigma^2} (x - \mu_k)^2) } {\sum { \pi_l \frac {1} {\sqrt{2 \pi} \sigma} \exp(- \frac {1} {2 \sigma^2} (x - \mu_l)^2) }}$ (4.12) 
+
+#### is largest is equivalent to classifying an observation to the class for which
+
+$\delta_k(x) = x  \frac{\mu_k} {\sigma^2} - \frac{\mu_k} {2\sigma^2} + log \pi_k$ (4.13) 
+
+#### is largest. Prove that this is the case. In other words, under the assumption that the observations in the kth class are drawn from a N(μk, σ2) distribution, the Bayes’ classifier assigns an observation to the class for which the discriminant function is maximized.
+
+&nbsp;
+
+  * substitude the term independent of k $Z = \frac { \frac {1} {\sqrt{2 \pi} \sigma} \exp(- \frac {1} {2 \sigma^2} (x^2)) } {\sum { \pi_l \frac {1} {\sqrt{2 \pi} \sigma} \exp(- \frac {1} {2 \sigma^2} (x - \mu_l)^2) }}$ 
+
+  * now we can write (4.12) as follows: $p_k(x) = Z \pi_k \exp(- \frac {1} {2 \sigma^2} (\mu_k^2 - 2x \mu_k))$
+
+  
+  
+  * Take log  $log(p_k(x)) = log(C) + log(\pi_k) + (- \frac {1} {2 \sigma^2} (\mu_k^2 - 2x \mu_k))$
+  
+  * rearrange $log(p_k(x)) =  (\frac {2x \mu_k} {2 \sigma^2} -\frac {\mu_k^2} {2 \sigma^2}) + log(\pi_k) + log(Z)$
+  
+  * since $log(Z)$ is just a constant which gets added to every K we can just leave it out
+  
+&nbsp;
+
+#### **3.**  This problem relates to the QDA model, in which the observations within each class are drawn from a normal distribution with a class specific mean vector and a class specific covariance matrix. We consider the simple case where p = 1; i.e. there is only one feature. Suppose that we have K classes, and that if an observation belongs to the kth class then X comes from a one-dimensional normal distribution, $X ~ N(μ_k, \sigma_k^2)$. Recall that the density function for the one-dimensional normal distribution is given in (4.11). Prove that in this case, the Bayes’ classifier is not linear. Argue that it is in fact quadratic.
+
+
+  * Equation (4.12) becomes: $p_k(x) = \frac {\pi_k \frac {1} {\sqrt{2 \pi} \sigma_k} \exp(- \frac {1} {2 \sigma_k^2} (x - \mu_k)^2) } {\sum { \pi_l \frac {1} {\sqrt{2 \pi} \sigma_k} \exp(- \frac {1} {2 \sigma_k^2} (x - \mu_l)^2) }}$
+
+  *  substitude the term independent of k $Z = \frac { \frac {1} {\sqrt{2 \pi}}} {\sum { \pi_l \frac {1} {\sqrt{2 \pi} \sigma_k} \exp(- \frac {1} {2 \sigma_k^2} (x - \mu_l)^2) }}$
+
+  * transform to $p_k(x) = Z \frac{\pi_k}{\sigma_k} \exp(- \frac {1} {2 \sigma_k^2} (x - \mu_k)^2)$
+  
+  * take log $log(p_k(x)) = log(Z) + log(\pi_k) - log(\sigma_k) + (- \frac {1} {2 \sigma_k^2} (x - \mu_k)^2)$
+  
+  * rearrange $log(p_k(x)) = (- \frac {1} {2 \sigma_k^2} (x^2 + \mu_k^2 - 2x\mu_k)) + log(\pi_k) - log(\sigma_k) + log(Z)$
+  
+&nbsp;
+
+#### **4.** When the number of features p is large, there tends to be a deterioration in the performance of KNN and other local approaches that perform prediction using only observations that are near the test observation for which a prediction must be made. This phenomenon is known as the curse of dimensionality, and it ties into the fact that curse of dimensionality non-parametric approaches often perform poorly when p is large. We will now investigate this curse.
+
+  (a) Suppose that we have a set of observations, each with measurements on p=1 feature, X. We assume that X is uniformly (evenly) distributed on [0,1]. Associated with each observation is a response value. Suppose that we wish to predict a test observation’s response using only observations that are within 10 % of the range of X closest to that test observation. For instance, in order to predict the response for a test observation with X=0.6,
+we will use observations in the range [0.55,0.65]. On average, what fraction of the available observations will we use to make the prediction?
+  * 10% on average
+  (b) Now suppose that we have a set of observations, each with measurements on p=2 features,X1 and X2. We assume that (X1,X2) are uniformly distributed on [0,1]×[0,1]. We wish to predict a test observation’s response using only observations that are within 10 % of the range of X1 and within 10 % of the range of X2 closest to that test observation. For instance, in order to predict the response for a test observation with X1=0.6 and X2=0.35, we will use observations in the range [0.55,0.65] for X1 and in the range [0.3,0.4] for X2. On average, what fraction of the available observations will we use to make the prediction?
+  * $0.1^2$
+  c) Now suppose that we have a set of observations on p=100 features. Again the observations are uniformly distributed on each feature, and again each feature ranges in value from 0 to 1. We wish to predict a test observation’s response using observations within the 10 % of each feature’s range that is closest to that test observation. What fraction of the available observations will we use to make the prediction?
+  * $0.1^{100}$
+  (d) Using your answers to parts (a)–(c), argue that a drawback of KNN when p is large is that there are very few training observations “near” any given test observation.
+  * if we look a the examples above and examine the formula $0.1^p$ we see the for higher p's the whole term is aiming towards 0.
+  (e) Now suppose that we wish to make a prediction for a test observation by creating a p-dimensional hypercube centered around the test observation that contains, on average, 10 % of the training observations. For p=1,2, and 100, what is the length of each side of the hypercube? Comment on your answer.
+  * for p=1 the length of each side of the hypercube is 0.1 (10% of the range)
+  * for p=2 the length of each side of the hypercube is $0.1^{\frac {1} {p}}=0.1^{\frac {1} {2}} = 0.316$
+  * for p=100 the length of each side of hypercube is $0.1^{\frac {1} {p}}=0.1^{\frac {1} {100}} = 0.977$ the means that we use almost the entire range for every feature
+
+&nbsp;
+  
+#### **5.** We now examine the differences between LDA and QDA.
+
+  (a) If the Bayes decision boundary is linear, do we expect LDA or QDA to perform better on the training set? On the test set?
+  * since Bayes is the best possible outcome and is linear LDA will perform better on training and test set
+  (b) If the Bayes decision boundary is non-linear, do we expect LDA or QDA to perform better on the training set? On the test set?
+  * on the training set QDA should perform better
+  * on the test set QDA should perform better if it doesn't overfit the training data too much
+  * since more flexibility reduces bias but increases variance the larger the data set the better QDA will perfom
+  (c) In general, as the sample size n increases, do we expect the test prediction accuracy of QDA relative to LDA to improve, decline, or be unchanged? Why?
+  * as stated in the previous question wither higher flexibility comes a reduction in bias but an increase in variance this could be countered by a larger n, since the bigger the sample the lower the sample variance and the closer it is to the true population
+   *so QDA should perform better with a larger n
+  (d) True or False: Even if the Bayes decision boundary for a given problem is linear, we will probably achieve a superior test error rate using QDA rather than LDA because QDA is flexible enough to model a linear decision boundary. Justify your answer.
+  False, QDA may perform better on the training data which is due to overfitting and thus will perform worse on the test set
+
+&nbsp;  
+  
+#### **6.** Suppose we collect data for a group of students in a statistics class with variables $X_1$= hours studied, $X_2$= undergrad GPA, and $Y$=receive an A. We fit a logistic regression and produce estimated coefficient $\hat\beta_0 = -6$, $\hat\beta_1 = 0.05$, $\hat\beta_2 = 1$
+  
+  (a) Estimate the probability that a student who studies for 40 h and has an undergrad GPA of 3.5 gets an A in the class.
+  
+  * $p(X) = \frac {e^{\hat\beta_0 + \hat\beta_1 X_1 + \hat\beta_2 X_2}} {1 + e^{\hat\beta_0 + \hat\beta_1 X_1 + \hat\beta_2 X_2}} = 0.38$ 
+  (b) How many hours would the student in part (a) need to study to have a 50 % chance of getting an A in the class?
+  
+  * $0.5 = \frac{e^{-6 + 0.05 X_1 + 1 \times 3.5}}{1+e^{-6+0.05 X_1 + 1 \times 3.5}}$
+  * solving the equation above yields $X_1 = 50$
+
+&nbsp;
+  
+#### **7.** Suppose that we wish to predict whether a given stock will issue adividend this year (“Yes” or “No”) based on $X$, last year’s percent profit. We examine a large number of companies and discover that the mean value of $X$  for companies that issued a dividend was $X= 10$, while the mean for those that didn’t was $X= 0$. In addition, the variance of $X$ for these two sets of companies was $\sigma^2= 36$. Finally, 80 % of companies issued dividends. Assuming that $X$ follows a normal distribution, predict the probability that a company will issue a dividend this year given that its percentage profit was $X=4$ last year. 
+
+  * since we have a constant variance of 36 we can use $p_k(x) = \frac {\pi_k \frac {1} {\sqrt{2 \pi} \sigma} \exp(- \frac {1} {2 \sigma^2} (x - \mu_k)^2) } {\sum { \pi_l \frac {1} {\sqrt{2 \pi} \sigma} \exp(- \frac {1} {2 \sigma^2} (x - \mu_l)^2) }}$
+  * plugin yields $p_{yes}(4) = \frac {0.8 \exp(- \frac {1} {2 \times 36} (4 - 10)^2)} {0.8 \exp(- \frac {1} {2 \times 36} (4 - 10)^2) + (1-0.8) \exp(- \frac {1} {2 \times 36} (4 - 0)^2)} = 0.752$
+  * the probability that a dividend gets issued is 75,2%
+
+&nbsp;
+  
+#### **8.** Suppose that we take a data set, divide it into equally-sized training and test sets, and then try out two different classification procedures. First we use logistic regression and get an error rate of 20 % on the training data and 30 % on the test data. Next we use 1-nearest neighbors (i.e.K= 1) and get an average error rate (averaged over both test and training data sets) of 18%. Based on these results, which method should we prefer to use for classification of new observations? Why?
+
+  * With such a high error rate for logistic regression the relationship might not be linear. In that case KNN  with K=1 could perform better. But a KNN classifier with K=1 tends to heavily overfit the training data and might have a training error rate close to 0. This on the other hand implies that the average 18% error rate is the result of a test set error rate of  > 30 (up to 36%). So in this case I would pick logistic regression over KNN.
+ 
+
+  
+#### **9.** This problem has to do with odds. 
+
+  (a) On average, what fraction of people with an odds of 0.37 of defaulting on their credit card payment will in fact default?
+  
+  * plugin yields: $\frac{p(X)}{1 - p(X)} = 0.37$
+  * rearranging yields: $p(X) = \frac{1}{\frac{1}{0.37}+1} = 0.27$
+  
+  (b) Suppose that an individual has a 16 % chance of defaulting on her credit card payment. What are the odds that she will default?
+  * plugin yields: $\frac{0.16}{1 - 0.16} = 0.19$
+  
+&nbsp;
+
+### Applied
+
+&nbsp;
+
+#### **10.** This question should be answered using the Weekly data set, which is part of the ISLR package. This data is similar in nature to the Smarket data from this chapter’s lab, except that it contains 1,089 weekly returns for 21 years, from the beginning of 1990 to the end of 2010.
+
+
+  (a) Produce some numerical and graphical summaries of the Weekly data. Do there appear to be any patterns?  
+  
+  
+```{r}
+library(ISLR)
+summary(Weekly)
+
+```  
+  
+```{r}
+library(ISLR)
+pairs(Weekly, col=Weekly$Direction)
+```   
+  
+&nbsp;
+  * Volume and Year are correlated
+
+  (b) Use the full data set to perform a logistic regression with Direction as the response and the five lag variables plus Volume as predictors. Use the summary function to print the results. Do any of the predictors appear to be statistically significant? If so, which ones?  
+  
+  
+```{r}
+glm.fit1 = glm(Direction~Lag1+Lag2+Lag3+Lag4+Lag5+Volume, data=Weekly, family=binomial)
+summary(glm.fit1)
+```  
+  
+  * Only Lag2 is statistically significant 
+  
+  (c) Compute the confusion matrix and overall fraction of correct predictions. Explain what the confusion matrix is telling you about the types of mistakes made by logistic regression.  
+
+
+```{r}
+glm.probs = predict(glm.fit1, type = "response")
+glm.pred1 = rep("Down", length(glm.probs))
+glm.pred1[glm.probs > 0.5] = "Up"
+table(glm.pred1, Weekly$Direction)
+
+``` 
+```{r}
+(54+557)/1089
+```
+  * overall 56,1% of the predictions were correct on the training set
+  
+```{r}
+54/(54+48)
+```
+  * when the market is going down the model has an accuracy of 52.9%
+```{r}
+557/(557+430)
+```
+  * when market is going up the model has an accuracy of 56,4%
+  (d) Now fit the logistic regression model using a training data period from 1990 to 2008, with Lag2 as the only predictor. Compute the confusion matrix and the overall fraction of correct predictions for the held out data (that is, the data from 2009 and 2010).
+
+```{r}
+train.years = Weekly$Year < 2009
+train = Weekly[train.years,]
+test = Weekly[!train.years,]
+glm.fit2 = glm(Direction~Lag2, data=train, family=binomial)
+glm.probs2 = predict(glm.fit2, test, type="response")
+glm.pred2 = ifelse(glm.probs2 > 0.5, "Up", "Down")
+table(glm.pred2, test$Direction)
+mean(glm.pred2 == test$Direction)  
+```
+  (e) Repeat (d) using LDA.
+  
+```{r}
+
+lda.fit = lda(Direction~Lag2, data=train)
+lda.fit.pred = predict(lda.fit, test)$class
+table(lda.fit.pred, test$Direction)
+mean(lda.fit.pred == test$Direction)
+```
+
+  (f) Repeat (d) using QDA.
+```{r} 
+qda.fit = qda(Direction~Lag2, data=train)
+qda.fit.pred = predict(qda.fit, test)$class
+table(qda.fit.pred, test$Direction)
+mean(qda.fit.pred == test$Direction)
+```
+  
+  (g) Repeat (d) using KNN with K=1.
+  
+```{r}
+library(class)
+set.seed(1)
+train.X = as.matrix(train$Lag2)
+test.X = as.matrix(test$Lag2)
+knn.pred = knn(train.X, test.X, train$Direction, k=1)
+table(knn.pred, test$Direction)
+mean(knn.pred == test$Direction)  
+```
+  
+  (h) Which of these methods appears to provide the best results on this data?
+  
+  *Logistic Regression and LDA provide the best results
+  
+  (i) Experiment with different combinations of predictors, including possible transformations and interactions, for each of the methods. Report the variables, method, and associated confusion matrix that appears to provide the best results on the heldout data. Note that you should also experiment with values for K in the KNN classifier.
+
+```{r}
+knn.pred = knn(train.X, test.X, train$Direction, k=5)
+table(knn.pred, test$Direction)
+mean(knn.pred == test$Direction)
+```
+```{r}
+knn.pred = knn(train.X, test.X, train$Direction, k=10)
+table(knn.pred, test$Direction)
+mean(knn.pred == test$Direction)
+```
+```{r}
+knn.pred = knn(train.X, test.X, train$Direction, k=20)
+table(knn.pred, test$Direction)
+mean(knn.pred == test$Direction)
+```
+```{r}
+knn.pred = knn(train.X, test.X, train$Direction, k=18)
+table(knn.pred, test$Direction)
+mean(knn.pred == test$Direction)
+```
+```{r} 
+qda.fit = qda(Direction~Lag2+Lag1, data=train)
+qda.fit.pred = predict(qda.fit, test)$class
+table(qda.fit.pred, test$Direction)
+mean(qda.fit.pred == test$Direction)
+```
+```{r}
+
+lda.fit = lda(Direction~Lag2*Lag3+Lag4+Lag5, data=train)
+lda.fit.pred = predict(lda.fit, test)$class
+table(lda.fit.pred, test$Direction)
+mean(lda.fit.pred == test$Direction)
+```
+  
+ &nbsp; 
+  
+#### **11.** In this problem, you will develop a model to predict whether a given car gets high or low gas mileage based on the Auto data set.
+  
+
+  (a) Create a binary variable, mpg01, that contains a 1 if mpg contains a value above its median, and a 0 if mpg contains a value below its median. You can compute the median using the median() function. Note you may find it helpful to use the data.frame() function to create a single data set containing both mpg01 and the other Auto variables. 
+  
+```{r}
+library(ISLR)
+data(Auto)
+mpg01 = ifelse(Auto$mpg > median(Auto$mpg), 1,0)
+df = data.frame(Auto, mpg01)
+```
+  
+  (b) Explore the data graphically in order to investigate the association between mpg01 and the other features. Which of the other features seem most likely to be useful in predicting mpg01? Scatterplots and boxplots may be useful tools to answer this question. Describe your findings.
+```{r}
+pairs(df)
+```
+```{r}
+par(mfrow=c(2,3))
+boxplot(cylinders ~ mpg01, data = Auto, main = "Cylinders vs mpg01", col="salmon")
+boxplot(displacement ~ mpg01, data = Auto, main = "Displacement vs mpg01", col="salmon2")
+boxplot(horsepower ~ mpg01, data = Auto, main = "Horsepower vs mpg01", col="salmon3")
+boxplot(weight ~ mpg01, data = Auto, main = "Weight vs mpg01", col="plum")
+boxplot(acceleration ~ mpg01, data = Auto, main = "Acceleration vs mpg01", col="plum2")
+boxplot(year ~ mpg01, data = Auto, main = "Year vs mpg01", col="plum4")
+```
+  
+  
+  (c) Split the data into a training set and a test set.
+  
+```{r}
+trainid = sample(1:nrow(df), nrow(df)*0.7 , replace=F)  
+train = df[trainid,]
+test = df[-trainid,]
+```  
+  
+  (d) Perform LDA on the training data in order to predict mpg01 using the variables that seemed most associated with mpg01 in (b). What is the test error of the model obtained?
+  
+```{r}
+lda.fit = lda(mpg01~displacement+horsepower+weight+cylinders, data=train)
+lda.fit.pred = predict(lda.fit, test)$class
+table(lda.fit.pred, test$mpg01)
+mean(lda.fit.pred != test$mpg01)  
+```  
+
+  (e) Perform QDA on the training data in order to predict mpg01 using the variables that seemed most associated with mpg01 in (b). What is the test error of the model obtained?
+  
+```{r}  
+qda.fit = qda(mpg01~displacement+horsepower+weight+cylinders, data=train)
+qda.fit.pred = predict(qda.fit, test)$class
+table(qda.fit.pred, test$mpg01)
+mean(qda.fit.pred != test$mpg01)
+```
+
+  f) Perform logistic regression on the training data in order to predict mpg01 using the variables that seemed most associated with mpg01 in (b). What is the test error of the model obtained?
+  
+```{r}
+logit.fit = glm(mpg01~displacement+horsepower+weight+cylinders, data=train, family=binomial)
+logit.fit.prob = predict(logit.fit, test, type="response")
+logit.fit.pred = ifelse(logit.fit.prob > 0.5, 1, 0)
+table(logit.fit.pred, test$mpg01)
+mean(logit.fit.pred != test$mpg01)  # error rate
+```
+  
+  (g) Perform KNN on the training data, with several values of K, in order to predict mpg01. Use only the variables that seemed most associated with mpg01 in (b). What test errors do you obtain? Which value of K seems to perform the best on this data set?
+  
+```{r}
+train.X = cbind(train$displacement, train$horsepower, train$weight, train$cylinders)
+test.X = cbind(test$displacement, test$horsepower, test$weight, test$cylinders)
+knn.pred = knn(train.X, test.X, train$mpg01, k=1)
+table(knn.pred, test$mpg01)
+mean(knn.pred != test$mpg01)
+knn.pred = knn(train.X, test.X, train$mpg01, k=10)
+table(knn.pred, test$mpg01)
+mean(knn.pred != test$mpg01)
+knn.pred = knn(train.X, test.X, train$mpg01, k=20)
+table(knn.pred, test$mpg01)
+mean(knn.pred != test$mpg01)
+knn.pred = knn(train.X, test.X, train$mpg01, k=30)
+table(knn.pred, test$mpg01)
+mean(knn.pred != test$mpg01)
+knn.pred = knn(train.X, test.X, train$mpg01, k=50)
+table(knn.pred, test$mpg01)
+mean(knn.pred != test$mpg01)
+knn.pred = knn(train.X, test.X, train$mpg01, k=100)
+table(knn.pred, test$mpg01)
+mean(knn.pred != test$mpg01)
+knn.pred = knn(train.X, test.X, train$mpg01, k=200)
+table(knn.pred, test$mpg01)
+mean(knn.pred != test$mpg01)
+```
+
+
+&nbsp;
+
+#### **12.** This problem involves writing functions.
+
+  (a) Write a function, Power(), that prints out the result of raising 2 to the 3rd power. In other words, your function should compute $2^3$ and print out the results.
+
+
+```{r}
+Power = function(){
+x=2^3
+print(x)
+}
+```
+  (b) Create a new function, Power2(), that allows you to pass any two numbers, x and a, and prints out the value of $x^a$.
+
+
+```{r}
+Power2 = function(x, a){
+y= x^a
+print(y)
+}
+```
+  (c) Using the Power2() function that you just wrote, compute $10^3$, $8^{17}$, and $131^3$.
+```{r}
+Power2(10,3)
+Power2(8, 17)
+Power2(131, 3)
+```
+  (d) Now create a new function, Power3(), that actually returns the result $x^a$ as an R object, rather than simply printing it to the screen.
+```{r}
+Power3 = function(x, a){
+result= x^a
+return(result)
+}
+```
+  (e) Now using the Power3() function, create a plot of $f(x)=x^2$. The x-axis should display a range of integers from 1 to 10, and the y-axis should display $x^2$. 
+
+```{r}
+x = 1:10
+plot(x, Power3(x,2), log="y", main="log(x^2) vs. x",
+     xlab="x", ylab="log(x^2)")
+```
+  
+   Create a function, PlotPower(), that allows you to create a plot of x against $x^a$ for a fixed a and for a range of values of x.
+
+```{r}
+PlotPower = function(x, a) {
+  plot(x, Power3(x,2), main="x^a versus x",
+       xlab="x", ylab=paste0("x^",a))
+}
+PlotPower(1:10,3)
+```
+
+&nbsp;
+
+#### **13.** Using the Boston data set, fit classification models in order to predict whether a given suburb has a crime rate above or below the median. Explore logistic regression, LDA, and KNN models using various subsets of the predictors. Describe your findings.
+
+&nbsp;
+
+```{r}
+data(Auto)
+crim01 = ifelse(Boston$crim > median(Boston$crim), 1,0)
+boston_df = data.frame(Boston, crim01)
+summary(boston_df)
+```
+
+
+```{r}
+pairs(boston_df)
+cor(boston_df)
+```
+```{r}
+par(mfrow=c(2, 4))
+boxplot(indus ~ crim01, data = boston_df, main = "indus vs crim01", col="salmon")
+boxplot(zn ~ crim01, data = boston_df, main = "zn vs crim01", col="salmon")
+boxplot(nox ~ crim01, data = boston_df, main = "nox vs crim01", col="salmon")
+boxplot(age ~ crim01, data = boston_df, main = "age vs crim01", col="salmon")
+boxplot(dis ~ crim01, data = boston_df, main = "dis vs crim01", col="salmon")
+boxplot(rad ~ crim01, data = boston_df, main = "rad vs crim01", col="salmon")
+boxplot(tax ~ crim01, data = boston_df, main = "tax vs crim01", col="salmon")
+
+
+```
+```{r}
+trainid = sample(1:nrow(boston_df), nrow(boston_df)*0.7, replace=F)  
+train = boston_df[trainid,]
+test = boston_df[-trainid,]
+train.X1 = cbind(train$zn, train$indus, train$chas, train$nox, train$rm, train$age, train$dis, train$rad, train$tax, train$ptratio, train$black, train$lstat, train$medv)
+test.X1 = cbind(test$zn, test$indus, test$chas, test$nox, test$rm, test$age, test$dis, test$rad, test$tax, test$ptratio, test$black, test$lstat, test$medv)
+train.X2 = cbind(train$age, train$tax, train$rad)
+test.X2 = cbind(test$age, test$tax, test$rad)
+```  
+LDA Models
+```{r}
+lda.fit = lda(crim01~age+tax+rad, data=train)
+lda.fit.pred = predict(lda.fit, test)$class
+table(lda.fit.pred, test$crim01)
+mean(lda.fit.pred != test$crim01)
+lda.fit = lda(crim01~ . - crim -crim01, data=train)
+lda.fit.pred = predict(lda.fit, test)$class
+table(lda.fit.pred, test$crim01)
+mean(lda.fit.pred != test$crim01)
+```
+QDA Models
+```{r}
+qda.fit = qda(crim01~age+tax+rad, data=train)
+qda.fit.pred = predict(qda.fit, test)$class
+table(qda.fit.pred, test$crim01)
+mean(qda.fit.pred != test$crim01)
+qda.fit = qda(crim01~ . - crim -crim01, data=train)
+qda.fit.pred = predict(qda.fit, test)$class
+table(qda.fit.pred, test$crim01)
+mean(qda.fit.pred != test$crim01)
+```
+Logistic Regression Models
+```{r, warning=FALSE, message=FALSE}
+# Logistic Regression models
+logit.fit = glm(crim01~age+tax+rad, data=train, family=binomial)
+logit.fit.prob = predict(logit.fit, test, type="response")
+logit.fit.pred = ifelse(logit.fit.prob > 0.5, 1, 0)
+mean(logit.fit.pred != test$crim01)  # error rate
+logit.fit = glm(crim01~. - crim -crim01, data=train, family=binomial)
+logit.fit.prob = predict(logit.fit, test, type="response")
+logit.fit.pred = ifelse(logit.fit.prob > 0.5, 1, 0)
+mean(logit.fit.pred != test$crim01)  # error rate
+```
+```{r, warning=FALSE, message=FALSE}
+set.seed(1)
+require(class)
+knn1.pred = knn(train.X1, test.X1, train$crim01, k=1)
+mean(knn1.pred != test$crim01)
+knn1.pred = knn(train.X1, test.X1, train$crim01, k=5)
+mean(knn1.pred != test$crim01)
+knn1.pred = knn(train.X1, test.X1, train$crim01, k=10)
+mean(knn1.pred != test$crim01)
+knn1.pred = knn(train.X1, test.X1, train$crim01, k=20)
+mean(knn1.pred != test$crim01)
+knn1.pred = knn(train.X1, test.X1, train$crim01, k=50)
+mean(knn1.pred != test$crim01)
+knn1.pred = knn(train.X1, test.X1, train$crim01, k=100)
+mean(knn1.pred != test$crim01)
+knn1.pred = knn(train.X1, test.X1, train$crim01, k=200)
+mean(knn1.pred != test$crim01)
+knn2.pred = knn(train.X2, test.X2, train$crim01, k=1)
+mean(knn2.pred != test$crim01)
+knn2.pred = knn(train.X2, test.X2, train$crim01, k=5)
+mean(knn2.pred != test$crim01)
+knn2.pred = knn(train.X2, test.X2, train$crim01, k=10)
+mean(knn2.pred != test$crim01)
+knn2.pred = knn(train.X2, test.X2, train$crim01, k=20)
+mean(knn2.pred != test$crim01)
+knn2.pred = knn(train.X2, test.X2, train$crim01, k=50)
+mean(knn2.pred != test$crim01)
+knn2.pred = knn(train.X2, test.X2, train$crim01, k=100)
+mean(knn2.pred != test$crim01)
+knn2.pred = knn(train.X2, test.X2, train$crim01, k=200)
+mean(knn2.pred != test$crim01)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

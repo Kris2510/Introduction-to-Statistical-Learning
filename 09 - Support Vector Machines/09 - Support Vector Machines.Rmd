@@ -1,0 +1,597 @@
+---
+title: "An Introduction to Statistical Learning"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(ISLR)
+library(MASS)
+```
+&nbsp;&nbsp;
+
+## 9. Support Vector Machines 
+
+&nbsp;
+
+### Conceptual
+
+&nbsp;
+
+#### **1.** This problem involves hyperplanes in two dimensions.
+
+  (a) Sketch the hyperplane $1 + 3X_1−X_2= 0$. Indicate the set of points for which $1+3X_1−X_2>0$, as well as the set of points for which $1+3X_1−X_2<0$.
+  (b) On the same plot, sketch the hyperplane $−2+X_1+2X_2=0$. Indicate the set of points for which $−2+X_1+2X_2>0$, as well as the set of points for which $−2+X_1+2X_2<0$.
+  
+```{r}
+x1 = -10:10
+x2 = 1 + 3 * x1
+plot(x1, x2, type = "l", col = "blue")
+text(c(3), c(-5), "Greater than 0", col = "blue")
+text(c(-1), c(15), "Less than 0", col = "blue")
+lines(x1, 1 - x1/2, col = "red")
+text(c(3), c(-10), "Less than 0", col = "red")
+text(c(-1), c(20), "Greater than 0", col = "red")
+legend("topleft",legend=c("1 + 3X_1 - X_2 = 0","−2+X_1+2X_2=0"),pch=19,col=c("blue", "red"))
+```
+
+&nbsp;
+
+#### **2.** We have seen that in p= 2 dimensions, a linear decision boundary takes the form $\beta_0+\beta_1X_1+\beta_2X_2= 0$. We now investigate a non-linear decision boundary.
+
+  (a) Sketch the curve $(1 +X_1)^2+(2−X_2)^2=4$
+  
+```{r}
+radius = 2
+plot(NA, NA, type = "n", xlim = c(-4, 2), ylim = c(-1, 5), asp = 1, xlab = "X1", 
+    ylab = "X2")
+symbols(c(-1), c(2), circles = c(radius), add = TRUE, inches = FALSE)
+
+```
+  
+
+  (b) On your sketch, indicate the set of points for which $(1 +X_1)^2+(2−X_2)^2>4$ as well as the set of points for which $(1 +X_1)^2+(2−X_2)^2<4$
+```{r}
+radius = 2
+plot(NA, NA, type = "n", xlim = c(-4, 2), ylim = c(-1, 5), asp = 1, xlab = "X1", 
+    ylab = "X2")
+symbols(c(-1), c(2), circles = c(radius), add = TRUE, inches = FALSE)
+text(c(-1), c(2), "< 4")
+text(c(-4), c(2), "> 4")
+
+```
+  
+  (c) Suppose that a classifier assigns an observation to the blue class if $(1 + X_1)^2 + (2 - X_2)^2 > 4$, and to the red class otherwise. To what class is the observation $(0,0)$ classified? $(−1,1), (2,2), (3,8)?$
+```{r}
+plot(c(0, -1, 2, 3), c(0, 1, 2, 8), col = c("blue", "red", "blue", "blue"), 
+    type = "p", asp = 1, xlab = "X1", ylab = "X2", ylim=c(-2,10))
+symbols(c(-1), c(2), circles = c(2), add = TRUE, inches = FALSE)
+text(c(0), c(-1), "(0,0)")
+text(c(-1), c(2), "(−1,1)")
+text(c(2), c(3), "(2,2)")
+text(c(3), c(9), "(3,8)")
+
+```
+  
+  (d) Argue that while the decision boundary in (c) is not linear in terms of $X_1$ and $X_2$, it is linear in terms of $X_1$, $X^2_1$, $X_2$, and $X_2^2$.
+
+
+&nbsp;
+
+#### **3.** Here we explore the maximal margin classifier on a toy data set.
+
+
+  (a) We are given n=7 observations in p=2 dimensions. For each observation, there is an associated class label.   
+  
+  
+  $\begin{array}{cccc}
+\hline
+\mbox{Obs.} &X_1 &X_2 &Y \cr
+\hline
+1 &3 &4 &\mbox{Red} \cr
+2 &2 &2 &\mbox{Red} \cr
+3 &4 &4 &\mbox{Red} \cr
+4 &1 &4 &\mbox{Red} \cr
+5 &2 &1 &\mbox{Blue} \cr
+6 &4 &3 &\mbox{Blue} \cr
+7 &4 &1 &\mbox{Blue} \cr
+\hline
+\end{array}$
+  
+  Sketch the observations.
+
+```{r}
+x1 = c(3, 2, 4, 1, 2, 4, 4)
+x2 = c(4, 2, 4, 4, 1, 3, 1)
+plot(x1, x2, col = c("red", "red", "red", "red", "blue", "blue", "blue"), pch=20, ylim = c(0, 5), xlim=c(0, 5), asp=1)
+```
+
+(b) Sketch the optimal separating hyperplane, and provide the equation for this hyperplane of the form (9.1).
+
+$X_1 - X_2 - 0.5 = 0$
+
+```{r}
+plot(x1, x2, col = c("red", "red", "red", "red", "blue", "blue", "blue"), xlim = c(0, 5), ylim = c(0, 5))
+abline(-0.5, 1)
+```
+
+  (c) Describe the classification rule for the maximal margin classifier. It should be something along the lines of “Classify to Red if $\beta_0+\beta_1X_1+\beta_2X_2>0$, and classify to Blue otherwise.” Provide the values for $\beta_0$, $\beta_1$, and $\beta_2$.
+
+  * Classify to red if $X_1 - X_2 - 0.5 < 0$, and classify to blue otherwise.
+
+  (d) On your sketch, indicate the margin for the maximal margin hyperplane.
+  
+```{r}
+plot(x1, x2, col = c("red", "red", "red", "red", "blue", "blue", "blue"), xlim = c(0, 5), ylim = c(0, 5))
+abline(-0.5, 1)
+abline(-1, 1, lty = 2)
+abline(0, 1, lty = 2)
+```
+
+  (e) Indicate the support vectors for the maximal margin classifier.
+  
+  * The support vectors are the points (2,1), (2,2), (4,3) and (4,4).
+  
+  (f) Argue that a slight movement of the seventh observation would not affect the maximal margin hyperplane.
+  
+  * Since point 7 (4,1) is not a support vector its movement would not affect the maximal margin hyperplane.
+  
+  (g) Sketch a hyperplane that is not the optimal separating hyperplane, and provide the equation for this hyperplane.
+  
+```{r}
+plot(x1, x2, col = c("red", "red", "red", "red", "blue", "blue", "blue"), xlim = c(0, 5), ylim = c(0, 5))
+abline(-0.2, 1)
+```
+  
+  * X_1 - X_2 - 0.2 = 0
+  
+  (h) Draw an additional observation on the plot so that the two classes are no longer separable by a hyperplane.
+
+```{r}
+plot(x1, x2, col = c("red", "red", "red", "red", "blue", "blue", "blue"), xlim = c(0, 5), ylim = c(0, 5))
+points(c(3), c(1), col = c("red"))
+```
+
+&nbsp;
+
+### Applied
+
+&nbsp;
+
+#### **4.** Generate a simulated two-class data set with 100 observations and two features in which there is a visible but non-linear separation between the two classes. Show that in this setting, a support vector machine with a polynomial kernel (with degree greater than 1) or a radial kernel will outperform a support vector classifier on the training data. Which technique performs best on test data? Make plots and report training and test error rates in order to back up your assertions.
+
+
+```{r}
+set.seed(11)
+x = rnorm(100)
+y = 4 * x^2 + +6 + rnorm(100)
+train = sample(100, 50)
+y[train] = y[train] + 4
+y[-train] = y[-train] - 4
+plot(x[train], y[train], pch="o", col="red", ylim=c(-4, 20), xlab="X", ylab="Y")
+points(x[-train], y[-train], pch="o", col="blue")
+```
+
+
+```{r}
+set.seed(11)
+library(e1071)
+z = rep(0, 100)
+z[train] = 1
+z = as.factor(z)
+data = data.frame(x = x, y = y, z = z)
+split = sample(100, 50)
+data.test = data[split, ]
+data.train = data[-split, ]
+```
+
+##### Linear
+```{r}
+svm.linear = svm(z ~ ., data = data.train, kernel = "linear", cost = 10)
+plot(svm.linear, data.train)
+```
+```{r}
+pred = predict(svm.linear, data.train)
+table(predict=pred, truth=data.train$z)
+```
+```{r}
+pred = predict(svm.linear, data.test)
+table(predict=pred, truth=data.test$z)
+```
+
+##### Polynomial
+```{r}
+svm.poly = svm(z ~ ., data = data.train, kernel = "polynomial", cost = 10)
+plot(svm.poly, data.train)
+```
+
+```{r}
+pred = predict(svm.poly, data.train)
+table(predict=pred, truth=data.train$z)
+```
+
+```{r}
+pred = predict(svm.poly, data.test)
+table(predict=pred, truth=data.test$z)
+```
+
+##### radial
+```{r}
+svm.radial = svm(z ~ ., data = data.train, kernel = "radial",gamma =2, cost = 10)
+plot(svm.radial, data.train)
+```
+
+```{r}
+pred = predict(svm.radial, data.train)
+table(predict=pred, truth=data.train$z)
+```
+
+
+```{r}
+pred = predict(svm.radial, data.test)
+table(predict=pred, truth=data.test$z)
+```
+
+  * radial Kernel performs best on the test set with 2 erros compared to 8 and 7 with polynomial and linear kernels
+
+&nbsp;
+
+#### **5.** We have seen that we can fit an SVM with a non-linear kernel in order to perform classification using a non-linear decision boundary. We will now see that we can also obtain a non-linear decision boundary by performing logistic regression using non-linear transformations of the features.
+
+
+  (a) Generate a data set with n=500 and p=2, such that the observations belong to two classes with a quadratic decision boundary between them.
+```{r}
+set.seed(753)
+x1 = runif(500) - 0.5
+x2 = runif(500) - 0.5
+y = 1 * (x1^2 - x2^2 > 0)
+```
+
+  (b) Plot the observations, colored according to their class labels. Your plot should display $X_1$ on the x-axis, and $X_2$ on they-axis.
+
+```{r}
+plot(x1[y == 0], x2[y == 0], col = "red", xlab = "X1", ylab = "X2", pch = "o")
+points(x1[y == 1], x2[y == 1], col = "blue", pch = "o")
+
+```
+
+  (c) Fit a logistic regression model to the data, using $X_1$ and $X_2$ as predictors.
+```{r}
+logit.fit = glm(y ~ x1 + x2, family = binomial)
+summary(logit.fit)
+```
+  
+  (d) Apply this model to the training data in order to obtain a predicted class label for each training observation. Plot the observations, colored according to the predicted class labels. The decision boundary should be linear.
+  
+```{r}
+data = data.frame(x1 = x1, x2 = x2, y = y)
+logit.prob= predict(logit.fit, data, type="response")
+logit.pred = ifelse(logit.prob > 0.5, 1, 0)
+data.1 = data[logit.pred == 1, ]
+data.0 = data[logit.pred == 0, ]
+plot(data.1$x1, data.1$x2, col = "blue", xlab = "X1", ylab = "X2", pch = "o")
+points(data.0$x1, data.0$x2, col = "red", pch = "o")
+```
+  
+  (e) Now fit a logistic regression model to the data using non-linear functions of X1 and X2 as predictors.
+```{r}
+logit2.fit = glm(y ~ poly(x1, 2) + poly(x2, 2)+I(x1 * x2), family = "binomial")
+summary(logit2.fit)
+```  
+  
+  (f) Apply this model to the training datain order to obtain a predicted class label for each training observation. Plot the ob-servations, colored according to the predicted class labels. The decision boundary should be obviously non-linear. If it is not, then repeat (a)-(e) until you come up with an example in which the predicted class labels are obviously non-linear.
+```{r}
+data = data.frame(x1 = x1, x2 = x2, y = y)
+logit.prob= predict(logit2.fit, data, type="response")
+logit.pred = ifelse(logit.prob > 0.5, 1, 0)
+data.1 = data[logit.pred == 1, ]
+data.0 = data[logit.pred == 0, ]
+plot(data.1$x1, data.1$x2, col = "blue", xlab = "X1", ylab = "X2", pch = "o")
+points(data.0$x1, data.0$x2, col = "red", pch = "o")
+```  
+  
+  (g) Fit a support vector classifier to the data with $X_1$ and $X_2$ as predictors. Obtain a class prediction for each training observation. Plot the observations, colored according to the predicted class labels.
+
+
+```{r}
+data$y = as.factor(data$y)
+svm.fit = svm(y ~ x1 + x2, data, kernel = "linear", cost = 0.1)
+svm.pred = predict(svm.fit, data)
+data.svm.1 = data[svm.pred == 1, ]
+data.svm.0 = data[svm.pred == 0, ]
+plot(data.svm.1$x1, data.svm.1$x2, col = "blue", xlab = "X1", ylab = "X2", pch = "+")
+points(data.svm.0$x1, data.svm.0$x2, col = "red", pch = 4)
+```
+
+  (h) Fit a SVM using a non-linear kernel to the data. Obtain a class prediction for each training observation. Plot the observations, colored according to the predicted class labels.
+  
+```{r}
+data$y = as.factor(data$y)
+svm.fit = svm(y ~ x1 + x2, data, kernel = "radial", gamma =2, cost = 0.1)
+svm.pred = predict(svm.fit, data)
+data.svm.1 = data[svm.pred == 1, ]
+data.svm.0 = data[svm.pred == 0, ]
+plot(data.svm.1$x1, data.svm.1$x2, col = "blue", xlab = "X1", ylab = "X2", pch = "+")
+points(data.svm.0$x1, data.svm.0$x2, col = "red", pch = 4)
+```
+
+&nbsp;
+
+#### **6.**  At the end of Section 9.6.1, it is claimed that in the case of data that is just barely linearly separable, a support vector classifier with a small value of “cost” that misclassifies a couple of training observations may perform better on test data than one with a huge value of “cost” that does not misclassify any training observations. You will now investigate that claim.
+
+
+  (a) Generate two-class data with p=2 in such a way that the classes are just barely linearly separable.
+  
+```{r}
+set.seed(1)
+x=matrix(rnorm(500*2), ncol=2)
+y=c(rep(-1,250), rep(1, 250))
+x[y==1, ] = x[y==1, ] +3
+plot(x, col=(y+5)/2, pch=19)
+```
+  
+
+  (b) Compute the cross-validation error rates for support vector classifiers with a range of cost values. How many training errors are misclassified for each value of cost considered, and how does this relate to the cross-validation errors obtained?
+  
+```{r}
+set.seed(1)
+data=data.frame(x=x, y=as.factor(y))
+tune.out = tune(svm, y ~ ., data = data, kernel = "linear", ranges = list(cost = c(0.001, 0.01, 0.1, 1, 5, 10, 100, 1000, 10000)))
+report = data.frame(cost = tune.out$performances$cost, misclass = tune.out$performances$error)
+report
+```
+```{r}
+bestmod = tune.out$best.model
+summary(bestmod)
+```
+  
+  
+  (c) Generate an appropriate test data set, and compute the test errors corresponding to each of the values of cost considered. Which value of cost leads to the fewest test errors, and how does this compare to the values of cost that yield the fewest training errors and the fewest cross-validation errors?
+  
+```{r}
+set.seed(58)
+xtest=matrix(rnorm(500*2), ncol=2)
+ytest=sample(c(-1,1), 500, re=TRUE)
+xtest[ytest==1, ] = xtest[ytest==1, ] +3
+testdat = data.frame(x=xtest, y=as.factor(ytest))
+costs = c(0.001, 0.01, 0.1, 1, 5, 10, 100, 1000, 10000)
+test.err = rep(NA, length(costs))
+for (i in 1:length(costs)) {
+    svm.fit = svm(y ~ ., data = data, kernel = "linear", cost = costs[i])
+    pred = predict(svm.fit, testdat)
+    test.err[i] = sum(pred != testdat$y)
+}
+data.frame(cost = costs, misclass = test.err)
+```
+
+  
+  (d) Discuss your results.
+
+
+  * the best performing model on the training data performed worst on the test set
+  * the model heavily overfit the training set
+
+&nbsp;
+
+#### **7.**  In this problem, you will use support vector approaches in order to predict whether a given car gets high or low gas mileage based on the “Auto” data set.
+
+
+  (a) Create a binary variable that takes on a 1 for cars with gas mileage above the median, and a 0 for cars with gas mileage below the median.
+  
+```{r}
+library(ISLR)
+bin = ifelse(Auto$mpg > median(Auto$mpg), 1, 0)
+Auto$mpgfactor = as.factor(bin)
+```
+  
+  
+  (b) Fit a support vector classifier to the data with various values of “cost”, in order to predict whether a car gets high of low gas mileage. Report the cross-validation errors associated with different values of this parameter. Comment on your results.
+  
+```{r}
+set.seed(1)
+tune.out = tune(svm, mpgfactor ~ ., data = Auto, kernel = "linear", ranges = list(cost = c(0.001, 0.01, 0.1, 1, 5, 10, 100, 1000)))
+summary(tune.out)
+```
+  * best performance with cost = 1 
+  
+  (c) Now repeat (b), this time using SVMs with radial and polynomial basis kernels, with different values of “gamma” and “degree” and “cost”. Comment on your results.
+```{r}
+set.seed(1)
+tune.out = tune(svm, mpgfactor ~ ., data = Auto, kernel = "polynomial", ranges = list(cost = c(0.001, 0.01, 0.1, 1, 5, 10, 100), degree = c(2, 3, 4, 5)))
+summary(tune.out)
+```
+  * For a polynomial kernel, the lowest cross-validation error is obtained for a degree of 2 and a cost of 100.
+  
+```{r}
+set.seed(1)
+tune.out = tune(svm, mpgfactor ~ ., data = Auto, kernel = "radial", ranges = list(cost = c(0.001, 0.01, 0.1, 1, 5, 10, 100), gamma = c(0.001, 0.01, 0.1, 1, 5, 10, 100)))
+summary(tune.out)
+```
+  * For a radial kernel, the lowest cross-validation error is obtained for a gamma of 0.01 and a cost of 100.
+  
+  (d) Make some plots to back up your assertions in (b) and (c)
+
+
+```{r}
+
+svm.linear = svm(mpgfactor ~ ., data = Auto, kernel = "linear",cost = 1, decision.values=T)
+svm.poly = svm(mpgfactor ~ ., data = Auto, kernel = "polynomial", cost = 100, degree = 2, decision.values=T)
+svm.radial = svm(mpgfactor ~ ., data = Auto, kernel = "radial", cost = 100, gamma = 0.01, decision.values=T)
+
+plotpairs = function(fit) {
+    for (name in names(Auto)[!(names(Auto) %in% c("mpg", "mpgfactor", "name"))]) {
+        plot(fit, Auto, as.formula(paste("mpg~", name, sep = "")))
+    }
+}
+plotpairs(svm.linear)
+
+```
+
+
+```{r}
+plotpairs(svm.poly)
+```
+
+
+```{r}
+plotpairs(svm.radial)
+```
+
+
+
+&nbsp;
+
+#### **8.** This problem involves the OJ data set which is part of the ISLR package.
+
+  (a) Create a training set containing a random sample of 800 observations,  and  a  test  set  containing  the  remaining observations.
+  
+```{r}
+library(ISLR)
+set.seed(1)
+train = sample(nrow(OJ), 800)
+oj.train = OJ[train, ]
+oj.test = OJ[-train, ]
+```
+  
+  (b) Fit a support vector classifier to the training data using cost=0.01, with Purchase as the response and the other variables as predictors. Use the summary() function to produce summary statistics, and describe the results obtained.
+  
+```{r}
+svm.linear = svm(Purchase~., data=oj.train, kernel="linear", cost = 0.01)
+summary(svm.linear)
+```
+  
+  * the SVM creates 435 support vectors of which 219 belong to CH and 216 belong to MM  
+  
+  (c) What are the training and test error rates?
+  
+```{r}
+train.pred = predict(svm.linear, oj.train)
+table(oj.train$Purchase, train.pred)
+```
+```{r}
+(75 + 65) / (420 + 240 + 75 + 65)
+```
+```{r}
+test.pred = predict(svm.linear, oj.test)
+table(oj.test$Purchase, test.pred)
+```
+```{r}
+(33 + 15) / (153 + 69 + 15 + 33)
+```
+
+  (d) Use the tune() function to select an optimal cost. Consider values in the range 0.01 to 10
+```{r}
+set.seed(1)
+tune.out = tune(svm, Purchase ~ ., data = oj.train, kernel = "linear", ranges = list(cost = c(0.01, 0.05, 0.1, 0.5, 1, 5, 10)))
+summary(tune.out)
+```
+
+  (e) Compute the training and test error rates using this new value for cost.
+  
+```{r}
+svm.linear = svm(Purchase ~ ., kernel = "linear", data = oj.train, cost = tune.out$best.parameter$cost)
+train.pred = predict(svm.linear, oj.train)
+table(oj.train$Purchase, train.pred)
+```
+```{r}
+(71 + 61) / (242 + 244 + 61 +71 )
+```
+```{r}
+test.pred = predict(svm.linear, oj.test)
+table(oj.test$Purchase, test.pred)
+```
+```{r}
+(29+13)/(155+73+13+29)
+```
+  
+  (f) Repeat parts (b) through (e) using a support vector machine with a radial kernel. Use the default value. 
+
+```{r}
+set.seed(1)
+tune.out = tune(svm, Purchase ~ ., data = oj.train, kernel = "radial", ranges = list(cost = c(0.01, 0.05, 0.1, 0.5, 1, 5, 10)))
+summary(tune.out)
+```
+```{r}
+svm.radial = svm(Purchase ~ ., kernel = "radial", data = oj.train, cost = tune.out$best.parameter$cost)
+train.pred = predict(svm.radial, oj.train)
+table(oj.train$Purchase, train.pred)
+```  
+```{r}
+(47+71)/(438+71+47+244)
+```
+```{r}
+test.pred = predict(svm.radial, oj.test)
+table(oj.test$Purchase, test.pred)
+```
+```{r}
+(18+30)/(150+18+30+72)
+```
+
+  * slight improvement over a linear kernel but nothing dramatic
+  
+  (g) Repeat parts (b) through (e) using a support vector machine with a polynomial kernel. Set degree=2.
+  
+```{r}
+set.seed(1)
+tune.out = tune(svm, Purchase ~ ., data = oj.train, kernel = "poly", ranges = list(cost = c(0.01, 0.05, 0.1, 0.5, 1, 5, 10)), degree = 2)
+summary(tune.out)
+```
+
+
+```{r}
+svm.poly = svm(Purchase ~ ., kernel = "poly", data = oj.train, cost = tune.out$best.parameter$cost)
+train.pred = predict(svm.poly, oj.train)
+table(oj.train$Purchase, train.pred)
+``` 
+```{r}
+(39+75)/(446+39+75+240)
+```
+
+```{r}
+test.pred = predict(svm.poly, oj.test)
+table(oj.test$Purchase, test.pred)
+```
+```{r}
+(13+42)/(155+13+42+60)
+```
+
+    
+  (h) Overall, which approach seems to give the best results on this data?
+    
+  * We got the best results with a radial kernel and a cost of 0.5.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
